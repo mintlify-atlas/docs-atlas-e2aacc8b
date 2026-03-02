@@ -1,0 +1,135 @@
+{
+  "projectType": "sdk-library",
+  "projectName": "python-pptx",
+  "projectDescription": "A Python library for creating, reading, and updating PowerPoint (.pptx) files.",
+  "theme": "sequoia",
+  "primaryColor": "#D04A2A",
+  "lightColor": "#E85D3C",
+  "darkColor": "#B03E23",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/presentations",
+              "concepts/slides",
+              "concepts/shapes",
+              "concepts/placeholders"
+            ]
+          },
+          {
+            "group": "Working with Content",
+            "pages": [
+              "guides/text",
+              "guides/images",
+              "guides/tables",
+              "guides/charts",
+              "guides/autoshapes"
+            ]
+          },
+          {
+            "group": "Advanced Topics",
+            "pages": [
+              "advanced/slide-masters",
+              "advanced/notes",
+              "advanced/core-properties"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Core API",
+            "pages": [
+              "api/presentation",
+              "api/slides",
+              "api/shapes"
+            ]
+          },
+          {
+            "group": "Shape Types",
+            "pages": [
+              "api/autoshape",
+              "api/picture",
+              "api/graphicframe",
+              "api/connector",
+              "api/group"
+            ]
+          },
+          {
+            "group": "Content",
+            "pages": [
+              "api/text",
+              "api/table",
+              "api/chart",
+              "api/chart-data"
+            ]
+          },
+          {
+            "group": "Formatting",
+            "pages": [
+              "api/dml",
+              "api/color",
+              "api/fill",
+              "api/line"
+            ]
+          },
+          {
+            "group": "Additional",
+            "pages": [
+              "api/placeholders",
+              "api/action",
+              "api/image",
+              "api/util",
+              "api/exceptions",
+              "api/enums"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Create presentations from scratch or templates",
+    "Add and manipulate slides with various layouts",
+    "Insert and format text, images, tables, and charts",
+    "Work with shapes, placeholders, and autoshapes",
+    "Access and modify presentation properties",
+    "Full round-trip support for .pptx files"
+  ],
+  "publicApiSurface": [
+    "Presentation()",
+    "Presentation.slides",
+    "Presentation.slide_layouts",
+    "Presentation.save()",
+    "Slides.add_slide()",
+    "Slide.shapes",
+    "Slide.placeholders",
+    "Shapes.add_textbox()",
+    "Shapes.add_picture()",
+    "Shapes.add_table()",
+    "Shapes.add_chart()",
+    "Shapes.add_shape()",
+    "Shape.text",
+    "Shape.text_frame",
+    "TextFrame.paragraphs",
+    "Paragraph.add_run()",
+    "Table.cell()",
+    "Chart.chart_type",
+    "ChartData.add_category()",
+    "ChartData.add_series()"
+  ]
+}
