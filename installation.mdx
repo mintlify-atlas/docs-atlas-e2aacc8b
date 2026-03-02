@@ -1,0 +1,254 @@
+---
+title: Installation
+description: Install python-pptx and its dependencies
+---
+
+# Installation
+
+Get python-pptx installed and ready to use in your Python environment.
+
+## Requirements
+
+Before installing python-pptx, ensure you have a compatible Python version:
+
+<Info>
+  **Python 3.8 or later** is required. python-pptx is tested against Python 3.8, 3.9, 3.10, 3.11, and 3.12.
+</Info>
+
+## Install python-pptx
+
+python-pptx is hosted on PyPI and can be installed using your preferred package manager.
+
+<CodeGroup>
+
+```bash pip
+pip install python-pptx
+```
+
+```bash pip3
+pip3 install python-pptx
+```
+
+```bash poetry
+poetry add python-pptx
+```
+
+```bash conda
+conda install -c conda-forge python-pptx
+```
+
+</CodeGroup>
+
+<Note>
+  The package manager will automatically install all required dependencies for you.
+</Note>
+
+## Dependencies
+
+python-pptx depends on the following packages, which are automatically installed:
+
+- **lxml** (>=3.1.0) - XML processing library
+- **Pillow** (>=3.3.2) - Python Imaging Library for image handling
+- **XlsxWriter** (>=0.5.7) - Required for charting features
+- **typing_extensions** (>=4.9.0) - Backport of typing features
+
+<Tip>
+  You don't need to install these dependencies manually. Your package manager handles this automatically.
+</Tip>
+
+## Installation steps
+
+<Steps>
+  <Step title="Check your Python version">
+    Verify you have Python 3.8 or later installed:
+    
+    ```bash
+    python --version
+    ```
+    
+    You should see output like `Python 3.8.0` or higher.
+  </Step>
+
+  <Step title="Install python-pptx">
+    Use pip to install python-pptx from PyPI:
+    
+    ```bash
+    pip install python-pptx
+    ```
+    
+    This will download and install python-pptx along with all required dependencies.
+  </Step>
+
+  <Step title="Verify the installation">
+    Test that python-pptx is installed correctly:
+    
+    ```bash
+    python -c "import pptx; print(pptx.__version__)"
+    ```
+    
+    This should print the version number (e.g., `1.0.2`) without any errors.
+  </Step>
+</Steps>
+
+## Virtual environments
+
+It's recommended to install python-pptx in a virtual environment to avoid conflicts with other projects.
+
+<Tabs>
+  <Tab title="venv">
+    ```bash
+    # Create a virtual environment
+    python -m venv myenv
+    
+    # Activate it (Linux/macOS)
+    source myenv/bin/activate
+    
+    # Activate it (Windows)
+    myenv\Scripts\activate
+    
+    # Install python-pptx
+    pip install python-pptx
+    ```
+  </Tab>
+  
+  <Tab title="conda">
+    ```bash
+    # Create a conda environment
+    conda create -n myenv python=3.11
+    
+    # Activate it
+    conda activate myenv
+    
+    # Install python-pptx
+    conda install -c conda-forge python-pptx
+    ```
+  </Tab>
+  
+  <Tab title="poetry">
+    ```bash
+    # Initialize a new project
+    poetry new myproject
+    cd myproject
+    
+    # Add python-pptx
+    poetry add python-pptx
+    
+    # Activate the environment
+    poetry shell
+    ```
+  </Tab>
+</Tabs>
+
+## Verify installation
+
+Once installed, you can verify everything is working by creating a simple test:
+
+```python
+from pptx import Presentation
+
+# Create a new presentation
+prs = Presentation()
+print(f"Successfully imported python-pptx!")
+print(f"New presentation has {len(prs.slides)} slides")
+print(f"Available layouts: {len(prs.slide_layouts)}")
+```
+
+Run this script:
+
+```bash
+python test_import.py
+```
+
+You should see output confirming the import was successful:
+
+```
+Successfully imported python-pptx!
+New presentation has 0 slides
+Available layouts: 11
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="ImportError: No module named 'pptx'">
+    This means python-pptx is not installed in the current environment. Ensure you:
+    
+    1. Activated the correct virtual environment (if using one)
+    2. Installed python-pptx using `pip install python-pptx`
+    3. Are running Python from the same environment where you installed the package
+  </Accordion>
+
+  <Accordion title="lxml installation fails on macOS/Linux">
+    The lxml library requires some system dependencies. Install them first:
+    
+    **macOS:**
+    ```bash
+    brew install libxml2 libxslt
+    pip install python-pptx
+    ```
+    
+    **Ubuntu/Debian:**
+    ```bash
+    sudo apt-get install libxml2-dev libxslt1-dev
+    pip install python-pptx
+    ```
+    
+    **RHEL/CentOS:**
+    ```bash
+    sudo yum install libxml2-devel libxslt-devel
+    pip install python-pptx
+    ```
+  </Accordion>
+
+  <Accordion title="Pillow installation fails">
+    Pillow may require additional system libraries for image processing:
+    
+    **macOS:**
+    ```bash
+    brew install libjpeg libpng
+    pip install python-pptx
+    ```
+    
+    **Ubuntu/Debian:**
+    ```bash
+    sudo apt-get install libjpeg-dev libpng-dev
+    pip install python-pptx
+    ```
+  </Accordion>
+
+  <Accordion title="Permission denied errors">
+    If you get permission errors during installation, either:
+    
+    1. Use a virtual environment (recommended)
+    2. Install for your user only: `pip install --user python-pptx`
+    3. Use sudo (not recommended): `sudo pip install python-pptx`
+  </Accordion>
+</AccordionGroup>
+
+## Upgrading python-pptx
+
+To upgrade to the latest version of python-pptx:
+
+<CodeGroup>
+
+```bash pip
+pip install --upgrade python-pptx
+```
+
+```bash poetry
+poetry update python-pptx
+```
+
+```bash conda
+conda update -c conda-forge python-pptx
+```
+
+</CodeGroup>
+
+## Next steps
+
+Now that you have python-pptx installed, you're ready to create your first presentation!
+
+<Card title="Quickstart tutorial" icon="rocket" href="/quickstart">
+  Follow the quickstart guide to create your first PowerPoint presentation with python-pptx
+</Card>

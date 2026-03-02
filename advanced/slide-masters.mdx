@@ -1,0 +1,285 @@
+---
+title: "Slide masters and layouts"
+description: "Understand slide masters, layouts, and how to customize presentation templates"
+---
+
+## Overview
+
+Slide masters and layouts provide the template structure for presentations in python-pptx. A slide master defines the overall look and common elements, while slide layouts provide specific arrangements for different slide types.
+
+### Key concepts
+
+- **Slide master**: The top-level template that defines fonts, colors, backgrounds, and common elements
+- **Slide layout**: A specific arrangement of placeholders that inherits from a slide master
+- **Inheritance**: Slides inherit appearance from their layout, which inherits from the slide master
+
+## Accessing slide masters
+
+A presentation can have multiple slide masters, though most presentations use a single master.
+
+### Get the first slide master
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide_master = prs.slide_master
+```
+
+The `.slide_master` property is a convenience for the common single-master case. It returns the first slide master in the presentation.
+
+### Access all slide masters
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide_masters = prs.slide_masters
+
+# Iterate through all masters
+for master in slide_masters:
+    print(f"Master: {master.name}")
+
+# Access by index
+first_master = slide_masters[0]
+```
+
+The `.slide_masters` collection supports:
+- Indexed access: `slide_masters[0]`
+- Length: `len(slide_masters)`
+- Iteration: `for master in slide_masters:`
+
+## Working with slide layouts
+
+Each slide master contains a collection of slide layouts that define different slide arrangements.
+
+### Access slide layouts
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+
+# Get layouts from the first slide master
+slide_layouts = prs.slide_layouts
+
+# Or get layouts from a specific master
+master = prs.slide_masters[0]
+slide_layouts = master.slide_layouts
+
+# Count available layouts
+print(f"Available layouts: {len(slide_layouts)}")
+
+# Iterate through layouts
+for layout in slide_layouts:
+    print(f"Layout: {layout.name}")
+```
+
+### Find a layout by name
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide_layouts = prs.slide_layouts
+
+# Get a specific layout by name
+title_layout = slide_layouts.get_by_name('Title Slide')
+
+if title_layout:
+    slide = prs.slides.add_slide(title_layout)
+```
+
+The `.get_by_name()` method returns the layout if found, or `None` if not found.
+
+### Create slides from layouts
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide_layouts = prs.slide_layouts
+
+# Use different layouts for different slide types
+title_slide = prs.slides.add_slide(slide_layouts[0])  # Title layout
+content_slide = prs.slides.add_slide(slide_layouts[1])  # Content layout
+blank_slide = prs.slides.add_slide(slide_layouts[6])  # Blank layout
+```
+
+## Understanding inheritance
+
+Slides inherit properties from their layout, which inherits from the slide master.
+
+### Get the slide layout for a slide
+
+```python
+from pptx import Presentation
+
+prs = Presentation('presentation.pptx')
+slide = prs.slides[0]
+
+# Check which layout the slide uses
+layout = slide.slide_layout
+print(f"Slide uses layout: {layout.name}")
+
+# Get the master from the layout
+master = layout.slide_master
+print(f"Layout inherits from master: {master.name}")
+```
+
+### Background inheritance
+
+Slides can inherit their background from the master or define a custom background.
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[0])
+
+# Check if slide follows master background
+if slide.follow_master_background:
+    print("Slide inherits background from master")
+
+# Interrupt inheritance (adds custom background)
+slide.follow_master_background = False
+
+# Restore inheritance (removes custom background)
+slide.follow_master_background = True
+```
+
+<Note>
+Setting `follow_master_background = False` may add a default background if no custom background exists.
+</Note>
+
+## Customizing master elements
+
+### Access shapes on a slide master
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide_master = prs.slide_master
+
+# Access all shapes on the master
+for shape in slide_master.shapes:
+    print(f"Shape: {shape.name}")
+
+# Access placeholders specifically
+for placeholder in slide_master.placeholders:
+    print(f"Placeholder idx={placeholder.placeholder_format.idx}")
+```
+
+### Modify master background
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+from pptx.enum.dml import MSO_THEME_COLOR
+
+prs = Presentation()
+slide_master = prs.slide_master
+
+# Set solid color background
+background = slide_master.background
+fill = background.fill
+fill.solid()
+fill.fore_color.theme_color = MSO_THEME_COLOR.ACCENT_1
+```
+
+<Warning>
+Accessing the `.fill` property on a background can be destructive. It may remove existing background style references. Only use when you intend to modify the background.
+</Warning>
+
+## Removing slide layouts
+
+You can remove unused slide layouts from a slide master.
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide_master = prs.slide_master
+slide_layouts = slide_master.slide_layouts
+
+# Get a layout to remove
+layout_to_remove = slide_layouts.get_by_name('Blank')
+
+if layout_to_remove:
+    # Check if layout is in use
+    if not layout_to_remove.used_by_slides:
+        slide_layouts.remove(layout_to_remove)
+        print("Layout removed successfully")
+    else:
+        print(f"Cannot remove: layout used by {len(layout_to_remove.used_by_slides)} slides")
+```
+
+<Warning>
+A layout that is used by one or more slides cannot be removed. The `.remove()` method raises `ValueError` if the layout is in use.
+</Warning>
+
+## Working with layout properties
+
+### Get layout name and index
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide_layouts = prs.slide_layouts
+
+for idx, layout in enumerate(slide_layouts):
+    print(f"Index {idx}: {layout.name}")
+    
+    # Find which slides use this layout
+    slides_using_layout = layout.used_by_slides
+    print(f"  Used by {len(slides_using_layout)} slides")
+```
+
+### Access layout placeholders
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+layout = prs.slide_layouts[1]
+
+# Iterate through placeholders in the layout
+for placeholder in layout.placeholders:
+    ph_type = placeholder.placeholder_format.type
+    idx = placeholder.placeholder_format.idx
+    print(f"Placeholder type={ph_type}, idx={idx}")
+```
+
+## Best practices
+
+<AccordionGroup>
+  <Accordion title="Use layouts for consistency">
+    Always create slides from appropriate layouts rather than blank slides. This ensures consistency across your presentation and makes it easier to apply theme changes.
+  </Accordion>
+  
+  <Accordion title="Avoid removing layouts prematurely">
+    Before removing a layout, check if it's in use with `.used_by_slides`. Attempting to remove a layout in use will raise an error.
+  </Accordion>
+  
+  <Accordion title="Test background changes carefully">
+    Accessing `.background.fill` can remove existing style references. Always test on a copy of your presentation first.
+  </Accordion>
+  
+  <Accordion title="Name your layouts clearly">
+    Use `.get_by_name()` with descriptive layout names rather than relying on numeric indices, which may vary between templates.
+  </Accordion>
+</AccordionGroup>
+
+## Related resources
+
+<CardGroup cols={2}>
+  <Card title="Working with slides" icon="presentation" href="/concepts/slides">
+    Learn how to create and manipulate slides
+  </Card>
+  
+  <Card title="Shapes and placeholders" icon="shapes" href="/concepts/shapes">
+    Understand placeholders and shape manipulation
+  </Card>
+</CardGroup>

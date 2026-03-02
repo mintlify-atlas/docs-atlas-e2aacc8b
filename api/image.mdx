@@ -1,0 +1,195 @@
+---
+title: 'Image'
+description: 'API reference for image handling in python-pptx'
+---
+
+# Image Objects
+
+Objects for handling images in PowerPoint presentations.
+
+## Image
+
+Immutable value object representing an image such as a JPEG, PNG, or GIF.
+
+### Class Methods
+
+<ParamField path="Image.from_blob(blob, filename=None)" type="Image">
+  Create a new Image object from binary image data.
+  
+  **Parameters:**
+  - `blob` (bytes): Binary image data
+  - `filename` (str | None): Optional filename for the image
+  
+  **Returns:** A new Image object
+  
+  **Example:**
+  ```python
+  with open('image.png', 'rb') as f:
+      blob = f.read()
+  image = Image.from_blob(blob, 'image.png')
+  ```
+</ParamField>
+
+<ParamField path="Image.from_file(image_file)" type="Image">
+  Create a new Image object from a file.
+  
+  **Parameters:**
+  - `image_file` (str | file-like): Path to image file (string) or a file-like object
+  
+  **Returns:** A new Image object
+  
+  **Example:**
+  ```python
+  # From file path
+  image = Image.from_file('photo.jpg')
+  
+  # From file-like object
+  from io import BytesIO
+  stream = BytesIO(image_bytes)
+  image = Image.from_file(stream)
+  ```
+</ParamField>
+
+### Properties
+
+<ParamField path="blob" type="bytes">
+  The binary image bytestream of this image.
+</ParamField>
+
+<ParamField path="content_type" type="str">
+  MIME-type of this image, e.g. `"image/jpeg"` or `"image/png"`.
+</ParamField>
+
+<ParamField path="dpi" type="tuple[int, int]">
+  A (horz_dpi, vert_dpi) 2-tuple specifying the dots-per-inch resolution.
+  
+  Returns `(72, 72)` if DPI is not specified in the image file or if an invalid value is present.
+</ParamField>
+
+<ParamField path="ext" type="str">
+  Canonical file extension for this image, e.g. `'png'` or `'jpg'`.
+  
+  The extension is always lowercase and represents the canonical extension for the image format, regardless of the original filename extension.
+  
+  **Supported formats:**
+  - `'bmp'` - Windows Bitmap
+  - `'gif'` - Graphics Interchange Format
+  - `'jpg'` - JPEG
+  - `'png'` - Portable Network Graphics
+  - `'tiff'` - Tagged Image File Format
+  - `'wmf'` - Windows Metafile
+</ParamField>
+
+<ParamField path="filename" type="str | None">
+  Filename from the path used to load this image.
+  
+  Returns `None` if the image was loaded from an in-memory stream rather than a file.
+</ParamField>
+
+<ParamField path="sha1" type="str">
+  40-character SHA1 hash digest of the image blob.
+  
+  Example: `"1be010ea47803b00e140b852765cdf84f491da47"`
+</ParamField>
+
+<ParamField path="size" type="tuple[int, int]">
+  A (width, height) 2-tuple specifying the dimensions of this image in pixels.
+</ParamField>
+
+## ImagePart
+
+An image part within a presentation package.
+
+### Class Methods
+
+<ParamField path="ImagePart.new(package, image)" type="ImagePart">
+  Create a new ImagePart instance containing the specified image.
+  
+  **Parameters:**
+  - `package` (Package): The presentation package
+  - `image` (Image): An Image object
+  
+  **Returns:** A new ImagePart instance
+</ParamField>
+
+### Properties
+
+<ParamField path="desc" type="str">
+  The filename associated with this image.
+  
+  Either the original filename or a generic name like `'image.jpg'`. Images created from a file path retain that filename; those from file-like objects get a generic name.
+</ParamField>
+
+<ParamField path="ext" type="str">
+  File-name extension for this image, e.g. `'png'` or `'jpg'`.
+</ParamField>
+
+<ParamField path="image" type="Image">
+  An Image object containing the image in this image part.
+  
+  <Note>
+    This is a `pptx.parts.image.Image` object, not a PIL Image.
+  </Note>
+</ParamField>
+
+<ParamField path="sha1" type="str">
+  The 40-character SHA1 hash digest for the image binary.
+  
+  Example: `"1be010ea47803b00e140b852765cdf84f491da47"`
+</ParamField>
+
+### Methods
+
+<ParamField path="scale(scaled_cx, scaled_cy)" type="tuple[int, int]">
+  Calculate scaled image dimensions in EMU.
+  
+  **Parameters:**
+  - `scaled_cx` (int | None): Desired width in EMU, or None
+  - `scaled_cy` (int | None): Desired height in EMU, or None
+  
+  **Returns:** A (width, height) tuple in EMU
+  
+  **Behavior:**
+  - If both are `None`: Returns native image size
+  - If both are specified: Returns values unchanged
+  - If only one is specified: Calculates the other to preserve aspect ratio
+  
+  **Example:**
+  ```python
+  from pptx.util import Inches
+  
+  # Scale to specific width, height calculated automatically
+  width, height = image_part.scale(Inches(4), None)
+  
+  # Get native size
+  width, height = image_part.scale(None, None)
+  ```
+</ParamField>
+
+## Example Usage
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+
+# Add image to slide
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+pic = slide.shapes.add_picture('image.png', Inches(1), Inches(1))
+
+# Access image properties
+image_part = pic.image
+print(f"Image format: {image_part.ext}")
+print(f"Image size: {image_part.image.size}")
+print(f"Image DPI: {image_part.image.dpi}")
+print(f"Content type: {image_part.image.content_type}")
+
+# Work with image from memory
+from io import BytesIO
+import requests
+
+response = requests.get('https://example.com/image.jpg')
+image_stream = BytesIO(response.content)
+pic = slide.shapes.add_picture(image_stream, Inches(2), Inches(2))
+```

@@ -1,0 +1,150 @@
+---
+title: 'Connector'
+description: 'Connector (line) shapes with connectable end-points'
+---
+
+## Connector
+
+Connector (line) shape. A connector is a linear shape having end-points that can be connected to other objects (but not to other connectors). A connector can be straight, have elbows, or can be curved.
+
+<Warning>
+  The `begin_connect()` and `end_connect()` methods are **EXPERIMENTAL**. The current implementation only works properly with rectangular shapes, such as pictures and rectangles. Use with other shape types may cause unexpected visual alignment of the connected end-point and could lead to a load error if `cxn_pt_idx` exceeds the connection point count available on the connected shape.
+</Warning>
+
+### Properties
+
+<ResponseField name="begin_x" type="Length">
+  Read/write. The X-position of the begin point of this connector, in English Metric Units (as a |Length| object).
+</ResponseField>
+
+<ResponseField name="begin_y" type="Length">
+  Read/write. The Y-position of the begin point of this connector, in English Metric Units (as a |Length| object).
+</ResponseField>
+
+<ResponseField name="end_x" type="Length">
+  Read/write. The X-position of the end point of this connector, in English Metric Units (as a |Length| object).
+</ResponseField>
+
+<ResponseField name="end_y" type="Length">
+  Read/write. The Y-position of the end point of this connector, in English Metric Units (as a |Length| object).
+</ResponseField>
+
+<ResponseField name="line" type="LineFormat">
+  |LineFormat| instance for this connector. Provides access to line properties such as line color, width, and line style.
+</ResponseField>
+
+<ResponseField name="shape_type" type="MSO_SHAPE_TYPE">
+  Member of `MSO_SHAPE_TYPE` identifying the type of this shape. Unconditionally `MSO_SHAPE_TYPE.LINE` for a `Connector` object.
+</ResponseField>
+
+### Methods
+
+<ParamField path="begin_connect" type="method">
+  Connect the beginning of this connector to a shape at a connection point.
+  
+  **Parameters:**
+  - `shape`: The shape to connect to
+  - `cxn_pt_idx` (int): Index of the connection point on the shape (starting from 0)
+  
+  Each shape has zero or more connection points and they are identified by index, starting with 0. Generally, the first connection point of a shape is at the top center of its bounding box and numbering proceeds counter-clockwise from there. However this is only a convention and may vary, especially with non built-in shapes.
+</ParamField>
+
+<ParamField path="end_connect" type="method">
+  Connect the ending of this connector to a shape at a connection point.
+  
+  **Parameters:**
+  - `shape`: The shape to connect to
+  - `cxn_pt_idx` (int): Index of the connection point on the shape (starting from 0)
+</ParamField>
+
+<ParamField path="get_or_add_ln" type="method">
+  Helper method required by |LineFormat|. Returns the `<a:ln>` element.
+  
+  **Returns:** `CT_LineProperties`
+</ParamField>
+
+### Example: Creating and Connecting Lines
+
+```python
+from pptx import Presentation
+from pptx.enum.shapes import MSO_CONNECTOR
+from pptx.util import Inches
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+# Add two shapes to connect
+left_shape = slide.shapes.add_shape(
+    MSO_SHAPE.ROUNDED_RECTANGLE,
+    Inches(1), Inches(2), Inches(1.5), Inches(1)
+)
+
+right_shape = slide.shapes.add_shape(
+    MSO_SHAPE.ROUNDED_RECTANGLE,
+    Inches(5), Inches(2), Inches(1.5), Inches(1)
+)
+
+# Add a connector
+connector = slide.shapes.add_connector(
+    MSO_CONNECTOR.STRAIGHT,
+    Inches(0), Inches(0),  # Start position (will be adjusted)
+    Inches(1), Inches(1)   # End position (will be adjusted)
+)
+
+# Connect the connector to the shapes
+# Connection point 0 is typically top-center
+# Connection point 3 is typically right-center
+connector.begin_connect(left_shape, 3)  # Connect to right side of left shape
+connector.end_connect(right_shape, 1)   # Connect to left side of right shape
+
+# Customize the line
+connector.line.color.rgb = RGBColor(255, 0, 0)
+connector.line.width = Pt(2.5)
+```
+
+### Example: Manual Position Control
+
+```python
+from pptx import Presentation
+from pptx.enum.shapes import MSO_CONNECTOR
+from pptx.util import Inches
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+# Add a connector
+connector = slide.shapes.add_connector(
+    MSO_CONNECTOR.STRAIGHT,
+    Inches(1), Inches(1),
+    Inches(5), Inches(3)
+)
+
+# Manually adjust endpoints
+connector.begin_x = Inches(2)
+connector.begin_y = Inches(2)
+connector.end_x = Inches(6)
+connector.end_y = Inches(4)
+
+print(f"Begin: ({connector.begin_x}, {connector.begin_y})")
+print(f"End: ({connector.end_x}, {connector.end_y})")
+```
+
+### Connection Point Reference
+
+For rectangular shapes, connection points are typically numbered:
+
+- **0**: Top center
+- **1**: Left center
+- **2**: Bottom center
+- **3**: Right center
+
+<Note>
+  This numbering is a convention and may vary for non-rectangular or custom shapes.
+</Note>
+
+## Related
+
+- [Shape (AutoShape)](/api/autoshape)
+- [Picture](/api/picture)
+- [GraphicFrame](/api/graphicframe)
+- [GroupShape](/api/group)

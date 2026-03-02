@@ -1,0 +1,227 @@
+---
+title: LineFormat
+description: Access to line properties such as color, style, and width for shape borders and connectors.
+---
+
+The `LineFormat` object provides access to line properties for shape borders, connectors, and chart elements. It controls line color, width, and dash style.
+
+## Usage
+
+```python
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from pptx.dml.color import RGBColor
+from pptx.enum.dml import MSO_LINE_DASH_STYLE
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+shape = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(1), Inches(1), Inches(2), Inches(1))
+
+# Set line color
+shape.line.color.rgb = RGBColor(255, 0, 0)
+
+# Set line width
+shape.line.width = Pt(2.5)
+
+# Set line style
+shape.line.dash_style = MSO_LINE_DASH_STYLE.DASH_DOT
+```
+
+A `LineFormat` object is typically accessed via the `.line` property of a shape such as `Shape` or `Picture`.
+
+## Properties
+
+<ParamField path="color" type="ColorFormat">
+  Read-only. ColorFormat instance providing access to line color settings.
+  
+  This is essentially a shortcut for `line.fill.fore_color`.
+  
+  **Important:** As a side-effect, accessing this property causes the line fill type to be set to `MSO_FILL.SOLID`. If you need to non-destructively check the existing fill type, use `line.fill.type` first.
+  
+  ```python
+  shape.line.color.rgb = RGBColor(255, 0, 0)  # Red line
+  shape.line.color.theme_color = MSO_THEME_COLOR.ACCENT_1
+  shape.line.color.brightness = -0.25  # 25% darker
+  ```
+</ParamField>
+
+<ParamField path="fill" type="FillFormat">
+  Read-only. FillFormat instance for this line, providing access to fill properties.
+  
+  Lines can have solid fills, gradient fills, or pattern fills, just like shape fills.
+  
+  ```python
+  # Solid line color
+  shape.line.fill.solid()
+  shape.line.fill.fore_color.rgb = RGBColor(255, 0, 0)
+  
+  # Gradient line
+  shape.line.fill.gradient()
+  shape.line.fill.gradient_angle = 90.0
+  ```
+</ParamField>
+
+<ParamField path="width" type="Length">
+  Read/write. Width of the line as an integer number of English Metric Units (EMU).
+  
+  The returned value is an instance of `Length`, which has properties like `.inches`, `.cm`, and `.pt` for unit conversion.
+  
+  Returns `Emu(0)` (effectively no line) when no explicit line width has been set.
+  
+  Assigning `None` sets the width to 0 (no line).
+  
+  ```python
+  from pptx.util import Pt, Inches
+  
+  # Set width using points
+  shape.line.width = Pt(2.5)
+  
+  # Set width using inches
+  shape.line.width = Inches(0.05)
+  
+  # Read width in different units
+  width_pt = shape.line.width.pt
+  width_inches = shape.line.width.inches
+  width_cm = shape.line.width.cm
+  
+  # Remove line
+  shape.line.width = None
+  ```
+</ParamField>
+
+<ParamField path="dash_style" type="MSO_LINE_DASH_STYLE | None">
+  Read/write. Line dash style from the `MSO_LINE_DASH_STYLE` enumeration.
+  
+  Returns `None` if no explicit dash style has been set. When `None`, the line dash style is inherited from the style hierarchy.
+  
+  Assigning `None` removes any existing explicitly-defined dash style.
+  
+  Available dash styles include:
+  - `MSO_LINE_DASH_STYLE.SOLID` - Solid line (default)
+  - `MSO_LINE_DASH_STYLE.DASH` - Dashed line
+  - `MSO_LINE_DASH_STYLE.DASH_DOT` - Alternating dashes and dots
+  - `MSO_LINE_DASH_STYLE.DASH_DOT_DOT` - Dash followed by two dots
+  - `MSO_LINE_DASH_STYLE.DOT` - Dotted line
+  - `MSO_LINE_DASH_STYLE.LONG_DASH` - Long dashes
+  - `MSO_LINE_DASH_STYLE.LONG_DASH_DOT` - Long dash followed by dot
+  - `MSO_LINE_DASH_STYLE.LONG_DASH_DOT_DOT` - Long dash followed by two dots
+  - `MSO_LINE_DASH_STYLE.ROUND_DOT` - Round dots
+  - `MSO_LINE_DASH_STYLE.SQUARE_DOT` - Square dots
+  - `MSO_LINE_DASH_STYLE.SYSTEM_DASH` - System dash style
+  - `MSO_LINE_DASH_STYLE.SYSTEM_DASH_DOT` - System dash-dot style
+  - `MSO_LINE_DASH_STYLE.SYSTEM_DOT` - System dot style
+  
+  ```python
+  from pptx.enum.dml import MSO_LINE_DASH_STYLE
+  
+  shape.line.dash_style = MSO_LINE_DASH_STYLE.DASH
+  
+  # Remove custom dash style (inherit from theme)
+  shape.line.dash_style = None
+  ```
+</ParamField>
+
+## Examples
+
+### Basic Line Formatting
+
+```python
+from pptx.util import Pt
+from pptx.dml.color import RGBColor
+
+shape = slide.shapes.add_shape(
+    MSO_SHAPE.RECTANGLE, 
+    Inches(1), Inches(1), 
+    Inches(3), Inches(2)
+)
+
+# Red line, 2.5 points wide
+shape.line.color.rgb = RGBColor(255, 0, 0)
+shape.line.width = Pt(2.5)
+```
+
+### Dashed Line
+
+```python
+from pptx.enum.dml import MSO_LINE_DASH_STYLE
+
+shape.line.color.rgb = RGBColor(0, 0, 255)  # Blue
+shape.line.width = Pt(1.5)
+shape.line.dash_style = MSO_LINE_DASH_STYLE.DASH_DOT
+```
+
+### Line with Theme Color
+
+```python
+from pptx.enum.dml import MSO_THEME_COLOR
+
+shape.line.color.theme_color = MSO_THEME_COLOR.ACCENT_1
+shape.line.color.brightness = -0.25  # 25% darker
+shape.line.width = Pt(3)
+```
+
+### Gradient Line
+
+```python
+from pptx.dml.color import RGBColor
+
+shape.line.fill.gradient()
+shape.line.fill.gradient_angle = 90.0
+
+# Blue to light blue gradient
+shape.line.fill.gradient_stops[0].color.rgb = RGBColor(0, 112, 192)
+shape.line.fill.gradient_stops[1].color.rgb = RGBColor(155, 194, 230)
+
+shape.line.width = Pt(5)
+```
+
+### No Line (Remove Border)
+
+```python
+# Method 1: Set width to None
+shape.line.width = None
+
+# Method 2: Set width to 0
+shape.line.width = Pt(0)
+
+# Method 3: Use background fill
+shape.line.fill.background()
+```
+
+### Connector Line
+
+```python
+from pptx.enum.shapes import MSO_CONNECTOR
+from pptx.util import Inches, Pt
+
+connector = slide.shapes.add_connector(
+    MSO_CONNECTOR.STRAIGHT,
+    Inches(1), Inches(1),
+    Inches(4), Inches(3)
+)
+
+connector.line.color.rgb = RGBColor(0, 0, 0)  # Black
+connector.line.width = Pt(2)
+connector.line.dash_style = MSO_LINE_DASH_STYLE.DASH
+```
+
+### Reading Line Properties
+
+```python
+# Check if line has explicit width
+if shape.line.width > Pt(0):
+    print(f"Line width: {shape.line.width.pt} points")
+
+# Check line color type
+if shape.line.fill.type == MSO_FILL.SOLID:
+    if shape.line.color.type == MSO_COLOR_TYPE.RGB:
+        print(f"RGB: {shape.line.color.rgb}")
+    elif shape.line.color.type == MSO_COLOR_TYPE.SCHEME:
+        print(f"Theme: {shape.line.color.theme_color}")
+
+# Check dash style
+if shape.line.dash_style:
+    print(f"Dash style: {shape.line.dash_style}")
+else:
+    print("Dash style inherited from theme")
+```

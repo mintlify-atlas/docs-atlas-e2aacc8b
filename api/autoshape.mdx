@@ -1,0 +1,175 @@
+---
+title: 'Shape (AutoShape)'
+description: 'AutoShape objects including text boxes and placeholders'
+---
+
+## Shape
+
+A shape that can appear on a slide. Corresponds to the `p:sp` element that can appear in any of the slide-type parts (slide, slideLayout, slideMaster, notesPage, notesMaster, handoutMaster).
+
+AutoShapes are distinctive shapes that can contain text and have adjustable geometry parameters.
+
+### Properties
+
+<ResponseField name="adjustments" type="AdjustmentCollection">
+  Read-only reference to |AdjustmentCollection| instance for this shape. Provides access to adjustment values that control the shape's geometry, such as the corner radius of a rounded rectangle.
+</ResponseField>
+
+<ResponseField name="auto_shape_type" type="MSO_AUTO_SHAPE_TYPE">
+  Enumeration value identifying the type of this auto shape, like `MSO_SHAPE.ROUNDED_RECTANGLE`. Raises `ValueError` if this shape is not an auto shape.
+</ResponseField>
+
+<ResponseField name="fill" type="FillFormat">
+  |FillFormat| instance for this shape. Provides access to fill properties such as fill color.
+</ResponseField>
+
+<ResponseField name="has_text_frame" type="bool">
+  Always `True` for an AutoShape, indicating this shape can contain text.
+</ResponseField>
+
+<ResponseField name="line" type="LineFormat">
+  |LineFormat| instance for this shape. Provides access to line properties such as line color and width.
+</ResponseField>
+
+<ResponseField name="shape_type" type="MSO_SHAPE_TYPE">
+  Unique integer identifying the type of this shape. Returns:
+  - `MSO_SHAPE_TYPE.PLACEHOLDER` if the shape is a placeholder
+  - `MSO_SHAPE_TYPE.FREEFORM` if the shape has custom geometry
+  - `MSO_SHAPE_TYPE.AUTO_SHAPE` if the shape is an autoshape
+  - `MSO_SHAPE_TYPE.TEXT_BOX` if the shape is a text box
+</ResponseField>
+
+<ResponseField name="text" type="str">
+  Read/write. Text in shape as a single string.
+  
+  The returned string will contain:
+  - A newline character (`"\\n"`) separating each paragraph
+  - A vertical-tab (`"\\v"`) character for each line break (soft carriage return)
+  
+  Assignment to `text` replaces any text previously contained in the shape, along with any paragraph or font formatting applied to it.
+</ResponseField>
+
+<ResponseField name="text_frame" type="TextFrame">
+  |TextFrame| instance for this shape. Contains the text of the shape and provides access to text formatting properties.
+</ResponseField>
+
+### Methods
+
+<ParamField path="get_or_add_ln" type="method">
+  Returns the `a:ln` element containing the line format properties XML for this shape.
+  
+  **Returns:** `CT_LineProperties`
+</ParamField>
+
+---
+
+## AdjustmentCollection
+
+Sequence of |Adjustment| instances for an auto shape. Each represents an available adjustment for a shape of its type. Supports `len()` and indexed access.
+
+### Usage
+
+```python
+# Get an adjustment value
+value = shape.adjustments[0]
+
+# Set an adjustment value
+shape.adjustments[0] = 0.15
+
+# Get number of adjustments
+count = len(shape.adjustments)
+```
+
+### Methods
+
+<ParamField path="__getitem__" type="method">
+  Provides indexed access to adjustment values.
+  
+  **Parameters:**
+  - `idx` (int): Index of the adjustment to retrieve
+  
+  **Returns:** `float` - The normalized effective value of the adjustment
+</ParamField>
+
+<ParamField path="__setitem__" type="method">
+  Provides item assignment via an indexed expression.
+  
+  **Parameters:**
+  - `idx` (int): Index of the adjustment to set
+  - `value` (float): The new normalized value for the adjustment
+  
+  Causes all adjustment values in collection to be written to the XML.
+</ParamField>
+
+<ParamField path="__len__" type="method">
+  Returns the number of adjustments in the collection.
+  
+  **Returns:** `int`
+</ParamField>
+
+---
+
+## Adjustment
+
+An adjustment value for an autoshape.
+
+An adjustment value corresponds to the position of an adjustment handle on an auto shape. Adjustment handles are the small yellow diamond-shaped handles that appear on certain auto shapes and allow the outline of the shape to be adjusted. For example, a rounded rectangle has an adjustment handle that allows the radius of its corner rounding to be adjusted.
+
+Values are `float` and generally range from 0.0 to 1.0, although the value can be negative or greater than 1.0 in certain circumstances.
+
+### Properties
+
+<ResponseField name="effective_value" type="float">
+  Read/write float representing normalized adjustment value for this adjustment.
+  
+  Actual values are expressed in shape coordinates (nominally between 0 and 100,000). The effective value is normalized to a corresponding value nominally between 0.0 and 1.0. This represents the proportion of the width or height of the shape at which the adjustment value is located from its starting point.
+  
+  For simple shapes such as a rounded rectangle, this intuitive correspondence holds. For more complicated shapes and at more extreme shape proportions (e.g. width is much greater than height), the value can become negative or greater than 1.0.
+</ResponseField>
+
+---
+
+## AutoShapeType
+
+Provides access to metadata for an auto-shape type. Instances are cached, so no more than one instance for a particular auto shape type is in memory.
+
+### Properties
+
+<ResponseField name="autoshape_type_id" type="MSO_AUTO_SHAPE_TYPE">
+  MSO_AUTO_SHAPE_TYPE enumeration member uniquely identifying this auto shape type.
+</ResponseField>
+
+<ResponseField name="basename" type="str">
+  Base part of shape name for auto shapes of this type. For example, `Rounded Rectangle` becomes `Rounded Rectangle 99` when the distinguishing integer is added to the shape name. This value is escaped because at least one autoshape-type name includes double quotes ('"No" Symbol').
+</ResponseField>
+
+<ResponseField name="prst" type="str">
+  Preset geometry identifier string for this auto shape. Used in the `prst` attribute of `a:prstGeom` element to specify the geometry to be used in rendering the shape, for example `'roundRect'`.
+</ResponseField>
+
+### Class Methods
+
+<ParamField path="default_adjustment_values" type="classmethod">
+  Returns sequence of (name, value) pair adjustment value defaults for a preset autoshape-type.
+  
+  **Parameters:**
+  - `prst` (MSO_AUTO_SHAPE_TYPE): The preset autoshape type
+  
+  **Returns:** `tuple[AdjustmentValue, ...]`
+</ParamField>
+
+<ParamField path="id_from_prst" type="classmethod">
+  Select auto shape type with matching preset geometry keyword.
+  
+  **Parameters:**
+  - `prst` (str): Preset geometry keyword like `"rect"`
+  
+  **Returns:** `MSO_AUTO_SHAPE_TYPE` - For example, `MSO_SHAPE.RECTANGLE` corresponding to preset geometry keyword `"rect"`
+</ParamField>
+
+## Related
+
+- [Picture](/api/picture)
+- [GraphicFrame](/api/graphicframe)
+- [Connector](/api/connector)
+- [GroupShape](/api/group)

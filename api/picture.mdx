@@ -1,0 +1,142 @@
+---
+title: 'Picture'
+description: 'Picture shapes and movie objects'
+---
+
+## Picture
+
+A picture shape, one that places an image on a slide. Based on the `p:pic` element.
+
+### Properties
+
+<ResponseField name="auto_shape_type" type="MSO_SHAPE | None">
+  Read/write. Member of MSO_SHAPE indicating masking shape.
+  
+  A picture can be masked by any of the so-called "auto-shapes" available in PowerPoint, such as an ellipse or triangle. When a picture is masked by a shape, the shape assumes the same dimensions as the picture and the portion of the picture outside the shape boundaries does not appear.
+  
+  Note the default value for a newly-inserted picture is `MSO_AUTO_SHAPE_TYPE.RECTANGLE`, which performs no cropping because the extents of the rectangle exactly correspond to the extents of the picture.
+  
+  The return value can also be `None`, indicating the picture either has no geometry (not expected) or has custom geometry, like a freeform shape.
+</ResponseField>
+
+<ResponseField name="crop_bottom" type="float">
+  Read/write. Relative portion cropped from shape bottom.
+  
+  1.0 represents 100%. For example, 25% is represented by 0.25. Negative values are valid as are values greater than 1.0.
+</ResponseField>
+
+<ResponseField name="crop_left" type="float">
+  Read/write. Relative portion cropped from left of shape.
+  
+  1.0 represents 100%. A negative value extends the side beyond the image boundary.
+</ResponseField>
+
+<ResponseField name="crop_right" type="float">
+  Read/write. Relative portion cropped from right of shape.
+  
+  1.0 represents 100%.
+</ResponseField>
+
+<ResponseField name="crop_top" type="float">
+  Read/write. Relative portion cropped from shape top.
+  
+  1.0 represents 100%.
+</ResponseField>
+
+<ResponseField name="image" type="Image">
+  The |Image| object for this picture. Provides access to the properties and bytes of the image in this picture shape.
+  
+  Raises `ValueError` if there is no embedded image.
+</ResponseField>
+
+<ResponseField name="line" type="LineFormat">
+  |LineFormat| instance for this picture. Provides access to properties of the picture outline, such as its color and width.
+</ResponseField>
+
+<ResponseField name="shape_type" type="MSO_SHAPE_TYPE">
+  Unconditionally `MSO_SHAPE_TYPE.PICTURE` in this case.
+</ResponseField>
+
+### Methods
+
+<ParamField path="get_or_add_ln" type="method">
+  Returns the `a:ln` element containing the line format properties XML for this picture.
+  
+  **Returns:** `CT_LineProperties`
+</ParamField>
+
+### Example
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+# Add picture
+img_path = 'image.jpg'
+left = Inches(1)
+top = Inches(1)
+pic = slide.shapes.add_picture(img_path, left, top)
+
+# Crop the picture
+pic.crop_left = 0.1   # Crop 10% from left
+pic.crop_top = 0.1    # Crop 10% from top
+
+# Access image properties
+print(f"Image size: {pic.image.size}")
+```
+
+---
+
+## Movie
+
+A movie shape, one that places a video on a slide.
+
+Like |Picture|, a movie shape is based on the `p:pic` element. A movie is composed of a video and a *poster frame*, the placeholder image that represents the video before it is played.
+
+### Properties
+
+<ResponseField name="media_format" type="_MediaFormat">
+  The |_MediaFormat| object for this movie. Provides access to formatting properties for the movie.
+</ResponseField>
+
+<ResponseField name="media_type" type="PP_MEDIA_TYPE">
+  Member of PpMediaType describing this shape. The return value is unconditionally `PP_MEDIA_TYPE.MOVIE` in this case.
+</ResponseField>
+
+<ResponseField name="poster_frame" type="Image | None">
+  |Image| object containing poster frame for this movie. Returns `None` if this movie has no poster frame (uncommon).
+</ResponseField>
+
+<ResponseField name="shape_type" type="MSO_SHAPE_TYPE">
+  Unconditionally `MSO_SHAPE_TYPE.MEDIA` in this case.
+</ResponseField>
+
+### Inherited Properties
+
+Movie shapes inherit the following properties from `_BasePicture`:
+
+- `crop_bottom`
+- `crop_left`
+- `crop_right`
+- `crop_top`
+- `line`
+
+---
+
+## _MediaFormat
+
+Provides access to formatting properties for a Media object. Media format properties are things like start point, volume, and compression type.
+
+<Note>
+  This class is not fully documented as its implementation is incomplete in the current version of python-pptx.
+</Note>
+
+## Related
+
+- [Shape (AutoShape)](/api/autoshape)
+- [GraphicFrame](/api/graphicframe)
+- [Connector](/api/connector)
+- [GroupShape](/api/group)

@@ -1,0 +1,236 @@
+---
+title: 'Utilities'
+description: 'API reference for utility classes and functions in python-pptx'
+---
+
+# Utility Classes
+
+Utility classes for working with measurements and property caching.
+
+## Length Classes
+
+Convenience classes for specifying and converting length measurements.
+
+### Length
+
+Base class for length measurement classes. Provides properties for converting between different units.
+
+**Properties:**
+
+<ParamField path="inches" type="float">
+  Floating point length in inches.
+</ParamField>
+
+<ParamField path="cm" type="float">
+  Floating point length in centimeters.
+</ParamField>
+
+<ParamField path="mm" type="float">
+  Floating point length in millimeters.
+</ParamField>
+
+<ParamField path="pt" type="float">
+  Floating point length in points (1/72 inch).
+</ParamField>
+
+<ParamField path="emu" type="int">
+  Integer length in English Metric Units (EMU).
+  
+  EMU is the internal unit used by PowerPoint. There are 914,400 EMU per inch.
+</ParamField>
+
+<ParamField path="centipoints" type="int">
+  Integer length in hundredths of a point (1/7200 inch).
+  
+  Used internally for font sizes in PowerPoint.
+</ParamField>
+
+### Inches
+
+Convenience constructor for creating length values in inches.
+
+**Usage:**
+```python
+from pptx.util import Inches
+
+# Create a 2-inch measurement
+left = Inches(2)
+top = Inches(1.5)
+
+# Convert to other units
+print(left.cm)  # 5.08
+print(left.pt)  # 144.0
+print(left.emu)  # 1828800
+```
+
+### Cm
+
+Convenience constructor for creating length values in centimeters.
+
+**Usage:**
+```python
+from pptx.util import Cm
+
+width = Cm(15)
+height = Cm(10)
+
+# Convert to other units
+print(width.inches)  # 5.905511811023622
+print(width.mm)  # 150.0
+```
+
+### Mm
+
+Convenience constructor for creating length values in millimeters.
+
+**Usage:**
+```python
+from pptx.util import Mm
+
+margin = Mm(25.4)
+print(margin.inches)  # 1.0
+```
+
+### Pt
+
+Convenience constructor for creating length values in points.
+
+**Usage:**
+```python
+from pptx.util import Pt
+
+font_size = Pt(18)
+line_spacing = Pt(24)
+
+print(font_size.inches)  # 0.25
+```
+
+### Emu
+
+Convenience constructor for creating length values in English Metric Units.
+
+**Usage:**
+```python
+from pptx.util import Emu
+
+# EMU values are usually obtained from shape properties
+width_emu = Emu(914400)  # 1 inch
+print(width_emu.inches)  # 1.0
+```
+
+### Centipoints
+
+Convenience constructor for creating length values in hundredths of a point.
+
+**Usage:**
+```python
+from pptx.util import Centipoints
+
+# Mainly used internally for font size storage
+font_size = Centipoints(1800)  # 18 points
+print(font_size.pt)  # 18.0
+```
+
+## Conversion Examples
+
+```python
+from pptx.util import Inches, Cm, Mm, Pt
+
+# All these represent the same length (1 inch)
+length1 = Inches(1)
+length2 = Cm(2.54)
+length3 = Mm(25.4)
+length4 = Pt(72)
+
+# Convert between units
+width = Inches(4)
+print(f"{width.cm} cm")        # 10.16 cm
+print(f"{width.mm} mm")        # 101.6 mm  
+print(f"{width.pt} pt")        # 288.0 pt
+print(f"{width.emu} EMU")      # 3657600 EMU
+
+# Use in shape positioning
+from pptx import Presentation
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+shape = slide.shapes.add_textbox(
+    left=Inches(1),
+    top=Cm(5),
+    width=Mm(100),
+    height=Pt(72)
+)
+```
+
+## lazyproperty
+
+Decorator for creating lazily-evaluated properties.
+
+### Description
+
+Like `@property`, but the decorated method is only evaluated on first access. The resulting value is cached and returned on subsequent accesses without re-evaluation.
+
+### Characteristics
+
+- **Read-only**: No setter or deleter behavior (attempting to assign raises `AttributeError`)
+- **Evaluated once**: The decorated method runs only on first access
+- **Cached**: The computed value is stored and reused
+- **Immutable**: Guarantees the value won't change after first access
+
+### Usage
+
+```python
+from pptx.util import lazyproperty
+
+class MyClass:
+    @lazyproperty
+    def expensive_property(self):
+        """This computation only runs once."""
+        print("Computing...")
+        return sum(range(1000000))
+
+obj = MyClass()
+
+# First access - prints "Computing..." and calculates
+result1 = obj.expensive_property
+
+# Subsequent accesses - returns cached value, no computation
+result2 = obj.expensive_property
+result3 = obj.expensive_property
+
+assert result1 == result2 == result3
+```
+
+### When to Use
+
+- Constructing collaborator objects (removes work from `__init__`)
+- Expensive computations that shouldn't run until needed
+- Values that depend on other properties but don't change
+- Decoupling initialization from usage
+
+### Example in python-pptx
+
+```python
+class Shape:
+    @lazyproperty
+    def text_frame(self):
+        """The text frame for this shape."""
+        # TextFrame construction happens only when first accessed
+        return TextFrame(self._element.txBody, self)
+```
+
+<Warning>
+  `lazyproperty` is read-only. Attempting to assign to it raises `AttributeError`.
+</Warning>
+
+## Constants
+
+```python
+# EMU conversion factors (used internally)
+Length._EMUS_PER_INCH = 914400
+Length._EMUS_PER_CM = 360000
+Length._EMUS_PER_MM = 36000
+Length._EMUS_PER_PT = 12700
+Length._EMUS_PER_CENTIPOINT = 127
+```

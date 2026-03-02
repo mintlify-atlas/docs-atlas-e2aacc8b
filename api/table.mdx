@@ -1,0 +1,264 @@
+---
+title: Table API
+description: Table-related objects for creating and manipulating tables
+---
+
+## Table
+
+A DrawingML table object. Not intended to be constructed directly, use `Slide.shapes.add_table()` to add a table to a slide.
+
+### Properties
+
+<ResponseField name="rows" type="_RowCollection">
+  Collection providing access to rows in this table. Rows are accessed using list notation.
+  
+  ```python
+  row = table.rows[0]
+  print(len(table.rows))
+  ```
+</ResponseField>
+
+<ResponseField name="columns" type="_ColumnCollection">
+  Collection providing access to columns in this table. Columns are accessed using list notation.
+  
+  ```python
+  col = table.columns[0]
+  col.width = Inches(2.0)
+  ```
+</ResponseField>
+
+<ResponseField name="first_row" type="bool">
+  When `True`, indicates first row should have distinct formatting. Used when the first row contains column headings.
+  
+  ```python
+  table.first_row = True
+  ```
+</ResponseField>
+
+<ResponseField name="first_col" type="bool">
+  When `True`, indicates first column should have distinct formatting. Used when the first column contains row headings.
+  
+  ```python
+  table.first_col = True
+  ```
+</ResponseField>
+
+<ResponseField name="last_row" type="bool">
+  When `True`, indicates the bottom row should have distinct formatting. Used when a totals row appears as the bottom row.
+  
+  ```python
+  table.last_row = True
+  ```
+</ResponseField>
+
+<ResponseField name="last_col" type="bool">
+  When `True`, indicates the rightmost column should have distinct formatting. Used when a row totals column appears at the far right.
+  
+  ```python
+  table.last_col = True
+  ```
+</ResponseField>
+
+<ResponseField name="horz_banding" type="bool">
+  When `True`, indicates rows should have alternating shading. Used to allow rows to be traversed more easily.
+  
+  ```python
+  table.horz_banding = True
+  ```
+</ResponseField>
+
+<ResponseField name="vert_banding" type="bool">
+  When `True`, indicates columns should have alternating shading.
+  
+  ```python
+  table.vert_banding = True
+  ```
+</ResponseField>
+
+### Methods
+
+<ResponseField name="cell(row_idx, col_idx)" type="_Cell">
+  Return cell at specified row and column indices (zero-based).
+  
+  <ParamField path="row_idx" type="int" required>
+    Zero-based row index
+  </ParamField>
+  
+  <ParamField path="col_idx" type="int" required>
+    Zero-based column index
+  </ParamField>
+  
+  ```python
+  cell = table.cell(0, 0)  # Top-left cell
+  cell.text = "Header"
+  ```
+</ResponseField>
+
+<ResponseField name="iter_cells()" type="Iterator[_Cell]">
+  Generate _Cell object for each cell in this table. Each grid cell is generated in left-to-right, top-to-bottom order.
+  
+  ```python
+  for cell in table.iter_cells():
+      cell.text = ""
+  ```
+</ResponseField>
+
+---
+
+## Cell
+
+Table cell object representing a single cell at a particular row/column location.
+
+### Properties
+
+<ResponseField name="text" type="str">
+  Textual content of cell as a single string. Newline characters (`"\n"`) separate paragraphs, vertical-tab (`"\v"`) characters represent line breaks.
+  
+  ```python
+  cell.text = "Line 1\nParagraph 2"
+  ```
+</ResponseField>
+
+<ResponseField name="text_frame" type="TextFrame">
+  TextFrame containing the text that appears in the cell.
+  
+  ```python
+  cell.text_frame.text = "Cell content"
+  cell.text_frame.word_wrap = True
+  ```
+</ResponseField>
+
+<ResponseField name="fill" type="FillFormat">
+  FillFormat instance for this cell. Provides access to fill properties such as foreground color.
+  
+  ```python
+  from pptx.util import RGBColor
+  cell.fill.solid()
+  cell.fill.fore_color.rgb = RGBColor(200, 200, 200)
+  ```
+</ResponseField>
+
+<ResponseField name="vertical_anchor" type="MSO_VERTICAL_ANCHOR | None">
+  Vertical alignment of this cell. `None` indicates the cell has no explicitly applied setting and its value is inherited.
+  
+  ```python
+  from pptx.enum.text import MSO_VERTICAL_ANCHOR
+  cell.vertical_anchor = MSO_VERTICAL_ANCHOR.MIDDLE
+  ```
+</ResponseField>
+
+<ResponseField name="margin_left" type="Length">
+  Left margin of cell. Assigning `None` uses the default value (0.1 inches for left and right margins).
+  
+  ```python
+  from pptx.util import Inches
+  cell.margin_left = Inches(0.1)
+  ```
+</ResponseField>
+
+<ResponseField name="margin_right" type="Length">
+  Right margin of cell.
+</ResponseField>
+
+<ResponseField name="margin_top" type="Length">
+  Top margin of cell. Default is 0.05 inches for top and bottom margins.
+</ResponseField>
+
+<ResponseField name="margin_bottom" type="Length">
+  Bottom margin of cell.
+</ResponseField>
+
+<ResponseField name="is_merge_origin" type="bool">
+  `True` if this cell is the top-left grid cell in a merged cell.
+  
+  ```python
+  if cell.is_merge_origin:
+      print(f"Spans {cell.span_width} columns, {cell.span_height} rows")
+  ```
+</ResponseField>
+
+<ResponseField name="is_spanned" type="bool">
+  `True` if this cell is spanned by a merge-origin cell. Note this is `False` for a merge-origin cell itself.
+</ResponseField>
+
+<ResponseField name="span_width" type="int">
+  Count of columns spanned by this cell. Only meaningful on merge-origin cells.
+</ResponseField>
+
+<ResponseField name="span_height" type="int">
+  Count of rows spanned by this cell. Only meaningful on merge-origin cells.
+</ResponseField>
+
+### Methods
+
+<ResponseField name="merge(other_cell)" type="None">
+  Create merged cell from this cell to `other_cell`. Either diagonal may be specified in either order.
+  
+  <ParamField path="other_cell" type="_Cell" required>
+    The opposite corner cell of the merge range
+  </ParamField>
+  
+  ```python
+  # Merge cells from (0,0) to (1,2)
+  top_left = table.cell(0, 0)
+  bottom_right = table.cell(1, 2)
+  top_left.merge(bottom_right)
+  ```
+  
+  Raises `ValueError` if the range contains merged cells or if `other_cell` is not in the same table.
+</ResponseField>
+
+<ResponseField name="split()" type="None">
+  Remove merge from this merge-origin cell. The merged cell will be "unmerged", yielding separate cells.
+  
+  ```python
+  if cell.is_merge_origin:
+      cell.split()
+  ```
+  
+  Raises `ValueError` when this cell is not a merge-origin cell.
+</ResponseField>
+
+---
+
+## Row
+
+Table row object.
+
+### Properties
+
+<ResponseField name="height" type="Length">
+  Height of row in EMU.
+  
+  ```python
+  from pptx.util import Inches
+  row.height = Inches(0.5)
+  ```
+</ResponseField>
+
+<ResponseField name="cells" type="_CellCollection">
+  Read-only reference to collection of cells in row. Individual cells are accessed using list notation.
+  
+  ```python
+  cell = row.cells[0]
+  for cell in row.cells:
+      cell.text = ""
+  ```
+</ResponseField>
+
+---
+
+## Column
+
+Table column object.
+
+### Properties
+
+<ResponseField name="width" type="Length">
+  Width of column in EMU.
+  
+  ```python
+  from pptx.util import Inches
+  column.width = Inches(2.0)
+  ```
+</ResponseField>

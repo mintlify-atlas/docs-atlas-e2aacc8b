@@ -1,0 +1,511 @@
+---
+title: "Core properties"
+description: "Access and modify document metadata like title, author, and subject"
+---
+
+## Overview
+
+Core properties provide document-level metadata for PowerPoint presentations. These properties are based on the Dublin Core metadata standard and include information like title, author, subject, keywords, and timestamps.
+
+### Available properties
+
+Core properties include:
+- **Basic metadata**: title, subject, author, keywords
+- **Classification**: category, content_status, identifier
+- **Timestamps**: created, modified, last_printed
+- **Versioning**: revision, version, last_modified_by
+- **Other**: comments, language
+
+## Accessing core properties
+
+Core properties are accessed through the presentation object.
+
+```python
+from pptx import Presentation
+
+prs = Presentation('presentation.pptx')
+core_props = prs.core_properties
+
+# Read property values
+print(f"Title: {core_props.title}")
+print(f"Author: {core_props.author}")
+print(f"Subject: {core_props.subject}")
+print(f"Keywords: {core_props.keywords}")
+```
+
+## String properties
+
+Most core properties are strings. Empty properties return an empty string (`''`).
+
+### Title
+
+The document title.
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+core_props = prs.core_properties
+
+# Read title
+print(core_props.title)
+
+# Set title
+core_props.title = "Q4 2024 Business Review"
+
+prs.save('presentation.pptx')
+```
+
+<Note>
+String properties are limited to 255 unicode characters. Attempting to set a longer value raises `ValueError`.
+</Note>
+
+### Author
+
+The document creator.
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+core_props = prs.core_properties
+
+# Set author
+core_props.author = "Jane Smith"
+
+print(f"Created by: {core_props.author}")
+```
+
+### Subject
+
+The document subject or description.
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+core_props = prs.core_properties
+
+core_props.subject = "Quarterly financial analysis and projections"
+prs.save('presentation.pptx')
+```
+
+### Keywords
+
+Searchable keywords or tags.
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+core_props = prs.core_properties
+
+# Set multiple keywords
+core_props.keywords = "finance, Q4, 2024, review, analysis"
+
+prs.save('presentation.pptx')
+```
+
+### Category
+
+Document category for classification.
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+core_props = prs.core_properties
+
+core_props.category = "Financial Reports"
+prs.save('presentation.pptx')
+```
+
+### Comments
+
+Document-level comments or notes.
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+core_props = prs.core_properties
+
+core_props.comments = "This presentation is for internal use only."
+prs.save('presentation.pptx')
+```
+
+### Content status
+
+The status of the document content.
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+core_props = prs.core_properties
+
+core_props.content_status = "Draft"
+# Or: "Final", "In Review", etc.
+
+prs.save('presentation.pptx')
+```
+
+### Identifier
+
+A unique identifier for the document.
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+core_props = prs.core_properties
+
+core_props.identifier = "DOC-2024-Q4-FIN-001"
+prs.save('presentation.pptx')
+```
+
+### Language
+
+The language of the document content.
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+core_props = prs.core_properties
+
+core_props.language = "en-US"
+prs.save('presentation.pptx')
+```
+
+### Last modified by
+
+The name of the person who last modified the document.
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+core_props = prs.core_properties
+
+core_props.last_modified_by = "John Doe"
+prs.save('presentation.pptx')
+```
+
+### Version
+
+A version string or number.
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+core_props = prs.core_properties
+
+core_props.version = "2.1.0"
+prs.save('presentation.pptx')
+```
+
+## Date and time properties
+
+Some properties store datetime values.
+
+### Created
+
+The document creation timestamp.
+
+```python
+from pptx import Presentation
+import datetime as dt
+
+prs = Presentation()
+core_props = prs.core_properties
+
+# Read creation date
+if core_props.created:
+    print(f"Created: {core_props.created}")
+
+# Set creation date
+core_props.created = dt.datetime(2024, 1, 15, 9, 30)
+
+prs.save('presentation.pptx')
+```
+
+### Modified
+
+The document last modified timestamp.
+
+```python
+from pptx import Presentation
+import datetime as dt
+
+prs = Presentation()
+core_props = prs.core_properties
+
+# Set modified date to current time
+core_props.modified = dt.datetime.now()
+
+print(f"Last modified: {core_props.modified}")
+
+prs.save('presentation.pptx')
+```
+
+### Last printed
+
+The timestamp when the document was last printed.
+
+```python
+from pptx import Presentation
+import datetime as dt
+
+prs = Presentation()
+core_props = prs.core_properties
+
+# Set last printed date
+core_props.last_printed = dt.datetime(2024, 3, 1, 14, 20)
+
+if core_props.last_printed:
+    print(f"Last printed: {core_props.last_printed}")
+
+prs.save('presentation.pptx')
+```
+
+<Note>
+Date properties return `None` if not set. They accept `datetime.datetime` objects without timezone information.
+</Note>
+
+## Revision property
+
+The revision number is an integer representing the document version.
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+core_props = prs.core_properties
+
+# Read revision (returns 0 if not set)
+print(f"Revision: {core_props.revision}")
+
+# Increment revision
+core_props.revision = core_props.revision + 1
+
+prs.save('presentation.pptx')
+```
+
+<Warning>
+The revision property must be a positive integer (>= 1). Setting it to 0 or a negative value raises `ValueError`.
+</Warning>
+
+## Practical examples
+
+### Set all basic metadata
+
+```python
+from pptx import Presentation
+import datetime as dt
+
+prs = Presentation()
+core_props = prs.core_properties
+
+# Set comprehensive metadata
+core_props.title = "2024 Annual Report"
+core_props.subject = "Company performance and financial results"
+core_props.author = "Finance Department"
+core_props.keywords = "annual report, 2024, finance, performance"
+core_props.category = "Financial Reports"
+core_props.comments = "Prepared for board meeting"
+core_props.content_status = "Final"
+core_props.created = dt.datetime(2024, 12, 1, 10, 0)
+core_props.revision = 1
+
+prs.save('annual_report.pptx')
+```
+
+### Read all properties from a presentation
+
+```python
+from pptx import Presentation
+
+prs = Presentation('presentation.pptx')
+core_props = prs.core_properties
+
+print("Document Properties:")
+print("=" * 50)
+print(f"Title: {core_props.title}")
+print(f"Subject: {core_props.subject}")
+print(f"Author: {core_props.author}")
+print(f"Keywords: {core_props.keywords}")
+print(f"Category: {core_props.category}")
+print(f"Comments: {core_props.comments}")
+print(f"Content Status: {core_props.content_status}")
+print(f"Identifier: {core_props.identifier}")
+print(f"Language: {core_props.language}")
+print(f"Last Modified By: {core_props.last_modified_by}")
+print(f"Version: {core_props.version}")
+print(f"\nTimestamps:")
+print(f"Created: {core_props.created}")
+print(f"Modified: {core_props.modified}")
+print(f"Last Printed: {core_props.last_printed}")
+print(f"Revision: {core_props.revision}")
+```
+
+### Copy properties between presentations
+
+```python
+from pptx import Presentation
+
+source = Presentation('source.pptx')
+dest = Presentation('template.pptx')
+
+# Copy all string properties
+src_props = source.core_properties
+dst_props = dest.core_properties
+
+dst_props.title = src_props.title
+dst_props.subject = src_props.subject
+dst_props.author = src_props.author
+dst_props.keywords = src_props.keywords
+dst_props.category = src_props.category
+dst_props.comments = src_props.comments
+dst_props.content_status = src_props.content_status
+dst_props.identifier = src_props.identifier
+dst_props.language = src_props.language
+dst_props.version = src_props.version
+
+# Copy date properties if they exist
+if src_props.created:
+    dst_props.created = src_props.created
+if src_props.modified:
+    dst_props.modified = src_props.modified
+
+dest.save('destination.pptx')
+```
+
+### Update modification tracking
+
+```python
+from pptx import Presentation
+import datetime as dt
+
+prs = Presentation('presentation.pptx')
+core_props = prs.core_properties
+
+# Update tracking information
+core_props.last_modified_by = "Update Script"
+core_props.modified = dt.datetime.now()
+core_props.revision = core_props.revision + 1
+
+prs.save('presentation.pptx')
+print(f"Updated to revision {core_props.revision}")
+```
+
+### Export properties to JSON
+
+```python
+from pptx import Presentation
+import json
+import datetime as dt
+
+prs = Presentation('presentation.pptx')
+core_props = prs.core_properties
+
+# Create properties dictionary
+props_dict = {
+    "title": core_props.title,
+    "subject": core_props.subject,
+    "author": core_props.author,
+    "keywords": core_props.keywords,
+    "category": core_props.category,
+    "comments": core_props.comments,
+    "content_status": core_props.content_status,
+    "identifier": core_props.identifier,
+    "language": core_props.language,
+    "last_modified_by": core_props.last_modified_by,
+    "version": core_props.version,
+    "revision": core_props.revision,
+    "created": core_props.created.isoformat() if core_props.created else None,
+    "modified": core_props.modified.isoformat() if core_props.modified else None,
+    "last_printed": core_props.last_printed.isoformat() if core_props.last_printed else None,
+}
+
+# Export to JSON file
+with open('properties.json', 'w') as f:
+    json.dump(props_dict, f, indent=2)
+
+print("Properties exported to properties.json")
+```
+
+## Default properties
+
+New presentations created with python-pptx have default core properties:
+
+```python
+from pptx import Presentation
+import datetime as dt
+
+prs = Presentation()
+core_props = prs.core_properties
+
+# Default values for new presentations:
+# title: "PowerPoint Presentation"
+# last_modified_by: "python-pptx"
+# revision: 1
+# modified: current UTC datetime
+
+print(f"Default title: {core_props.title}")
+print(f"Default modified by: {core_props.last_modified_by}")
+print(f"Default revision: {core_props.revision}")
+```
+
+## Limitations and considerations
+
+<AccordionGroup>
+  <Accordion title="String length limit">
+    All string properties are limited to 255 unicode characters. Attempting to set a longer value raises `ValueError`.
+  </Accordion>
+  
+  <Accordion title="Date properties accept datetime only">
+    Date properties require `datetime.datetime` objects. Passing other types raises `ValueError`.
+  </Accordion>
+  
+  <Accordion title="Revision must be positive">
+    The revision property must be an integer >= 1. Values < 1 raise `ValueError`. Reading an unset or invalid revision returns 0.
+  </Accordion>
+  
+  <Accordion title="Properties persist in the file">
+    Core properties are stored in the `/docProps/core.xml` part of the .pptx package and persist when the file is saved.
+  </Accordion>
+</AccordionGroup>
+
+## Best practices
+
+<AccordionGroup>
+  <Accordion title="Set metadata for better organization">
+    Always set at least title, author, and subject for better document organization and searchability.
+  </Accordion>
+  
+  <Accordion title="Use keywords for search">
+    Add relevant keywords to make presentations easier to find in document management systems.
+  </Accordion>
+  
+  <Accordion title="Track versions with revision">
+    Increment the revision number each time you make significant changes to track document history.
+  </Accordion>
+  
+  <Accordion title="Update modification timestamps">
+    Update `modified` and `last_modified_by` when making programmatic changes to maintain accurate audit trails.
+  </Accordion>
+</AccordionGroup>
+
+## Related resources
+
+<CardGroup cols={2}>
+  <Card title="Working with presentations" icon="presentation" href="/concepts/presentations">
+    Learn the basics of creating and saving presentations
+  </Card>
+  
+  <Card title="Slide masters" icon="layer-group" href="/advanced/slide-masters">
+    Customize presentation templates
+  </Card>
+</CardGroup>

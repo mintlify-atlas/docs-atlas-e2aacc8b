@@ -1,0 +1,157 @@
+---
+title: 'GroupShape'
+description: 'Container shape that groups other shapes together'
+---
+
+## GroupShape
+
+A shape that acts as a container for other shapes. Group shapes allow multiple shapes to be treated as a single unit for positioning, sizing, and other operations.
+
+<Note>
+  **Important limitations:**
+  - A group shape has no text frame and cannot have one
+  - A group shape cannot have a click action, such as a hyperlink
+  - Member shapes within the group can still have their own text and click actions
+</Note>
+
+### Properties
+
+<ResponseField name="click_action" type="ActionSetting">
+  Unconditionally raises `TypeError`. A group shape cannot have a click action or hover action.
+</ResponseField>
+
+<ResponseField name="has_text_frame" type="bool">
+  Unconditionally `False`. A group shape does not have a textframe and cannot itself contain text. This does not impact the ability of shapes contained by the group to each have their own text.
+</ResponseField>
+
+<ResponseField name="shadow" type="ShadowFormat">
+  |ShadowFormat| object representing shadow effect for this group.
+  
+  A |ShadowFormat| object is always returned, even when no shadow is explicitly defined on this group shape (i.e. when the group inherits its shadow behavior).
+</ResponseField>
+
+<ResponseField name="shape_type" type="MSO_SHAPE_TYPE">
+  Member of MsoShapeType identifying the type of this shape. Unconditionally `MSO_SHAPE_TYPE.GROUP` in this case.
+</ResponseField>
+
+<ResponseField name="shapes" type="GroupShapes">
+  |GroupShapes| object for this group. The |GroupShapes| object provides access to the group's member shapes and provides methods for adding new ones.
+</ResponseField>
+
+### Example: Creating a Group
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+# Add shapes that will be grouped
+shape1 = slide.shapes.add_shape(
+    MSO_SHAPE.RECTANGLE,
+    Inches(1), Inches(1), Inches(2), Inches(1)
+)
+
+shape2 = slide.shapes.add_shape(
+    MSO_SHAPE.OVAL,
+    Inches(1.5), Inches(2), Inches(1), Inches(1)
+)
+
+# Create a group from existing shapes
+# Note: The exact API for grouping may vary; consult the GroupShapes documentation
+group = slide.shapes.add_group_shape()
+group.shapes.add_shape(shape1)
+group.shapes.add_shape(shape2)
+```
+
+### Example: Working with Group Members
+
+```python
+from pptx import Presentation
+
+prs = Presentation('presentation.pptx')
+slide = prs.slides[0]
+
+# Find group shapes
+for shape in slide.shapes:
+    if shape.shape_type == MSO_SHAPE_TYPE.GROUP:
+        group = shape
+        
+        # Access member shapes
+        print(f"Group contains {len(group.shapes)} shapes")
+        
+        # Iterate through member shapes
+        for member in group.shapes:
+            print(f"Member: {member.name}, Type: {member.shape_type}")
+            
+            # Member shapes can have text
+            if member.has_text_frame:
+                print(f"Text: {member.text}")
+```
+
+### Example: Applying Shadow to Group
+
+```python
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from pptx.enum.shapes import MSO_SHAPE
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+# Create a group (assuming it exists)
+group = slide.shapes[0]  # Replace with actual group shape
+
+if group.shape_type == MSO_SHAPE_TYPE.GROUP:
+    # Apply shadow to the entire group
+    shadow = group.shadow
+    shadow.inherit = False
+    shadow.visible = True
+    shadow.distance = Pt(5)
+    shadow.angle = 45
+    shadow.blur_radius = Pt(4)
+```
+
+### Inherited Properties
+
+GroupShape inherits common shape properties from `BaseShape`:
+
+- `name` - The name of this shape
+- `shape_id` - The unique ID of this shape
+- `left` - The left edge position
+- `top` - The top edge position
+- `width` - The width of the group's bounding box
+- `height` - The height of the group's bounding box
+- `rotation` - Rotation angle in degrees
+
+### Working with GroupShapes Collection
+
+The `shapes` property returns a |GroupShapes| collection that provides methods for managing member shapes:
+
+```python
+# Access the GroupShapes collection
+group_shapes = group.shapes
+
+# Get member count
+count = len(group_shapes)
+
+# Access by index
+first_shape = group_shapes[0]
+
+# Iterate through members
+for shape in group_shapes:
+    # Process each member shape
+    pass
+```
+
+<Info>
+  For details on adding shapes to a group and other collection operations, see the GroupShapes documentation.
+</Info>
+
+## Related
+
+- [Shape (AutoShape)](/api/autoshape)
+- [Picture](/api/picture)
+- [GraphicFrame](/api/graphicframe)
+- [Connector](/api/connector)

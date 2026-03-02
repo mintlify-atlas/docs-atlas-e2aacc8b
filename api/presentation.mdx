@@ -1,0 +1,206 @@
+---
+title: Presentation
+description: API reference for the Presentation class and related objects
+---
+
+## Presentation
+
+PresentationML (PML) presentation. Not intended to be constructed directly. Use `pptx.Presentation()` to open or create a presentation.
+
+### Properties
+
+#### core_properties
+
+`CoreProperties` - Read/write access to the Dublin Core document properties for the presentation.
+
+Provides access to metadata like author, title, subject, keywords, etc.
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+prs.core_properties.title = "My Presentation"
+prs.core_properties.author = "John Doe"
+```
+
+#### notes_master
+
+`NotesMaster` - Instance of notes master for this presentation.
+
+If the presentation does not have a notes master, one is created from a default template and returned. The same single instance is returned on each call.
+
+#### slide_height
+
+`Length | None` - Height of slides in this presentation, in English Metric Units (EMU). Read/write.
+
+Returns `None` if no slide height is defined.
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+
+prs = Presentation()
+prs.slide_height = Inches(7.5)
+```
+
+#### slide_layouts
+
+`SlideLayouts` - Collection of slide layouts belonging to the first slide master.
+
+A presentation can have more than one slide master and each master will have its own set of layouts. This property is a convenience for the common case where the presentation has only a single slide master.
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+title_layout = prs.slide_layouts[0]
+```
+
+#### slide_master
+
+`SlideMaster` - First slide master belonging to this presentation.
+
+Typically, presentations have only a single slide master. This property provides simpler access in that common case.
+
+#### slide_masters
+
+`SlideMasters` - Collection of slide masters belonging to this presentation.
+
+#### slide_width
+
+`Length | None` - Width of slides in this presentation, in English Metric Units (EMU). Read/write.
+
+Returns `None` if no slide width is defined.
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+
+prs = Presentation()
+prs.slide_width = Inches(10)
+```
+
+#### slides
+
+`Slides` - Collection of slides in this presentation.
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+for slide in prs.slides:
+    print(slide.slide_id)
+```
+
+### Methods
+
+#### save()
+
+Writes this presentation to a file.
+
+<ParamField path="file" type="str | IO[bytes]" required>
+  File path (string) or file-like object open for writing bytes
+</ParamField>
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+prs.save('output.pptx')
+
+# Or save to file-like object
+import io
+file_obj = io.BytesIO()
+prs.save(file_obj)
+```
+
+---
+
+## CoreProperties
+
+Provides read/write access to the Dublin Core document properties for a presentation. Accessed via the `core_properties` attribute of a Presentation object.
+
+### Properties
+
+#### author
+
+`str` - An entity primarily responsible for making the content of the resource.
+
+#### category
+
+`str` - A categorization of the content of this package. Example values: Resume, Letter, Financial Forecast, Proposal, Technical Presentation.
+
+#### comments
+
+`str` - An account of the content of the resource.
+
+#### content_status
+
+`str` - Completion status of the document, e.g. 'draft'.
+
+#### created
+
+`datetime | None` - Time of initial creation of the document. Date properties return `None` if not set.
+
+#### identifier
+
+`str` - An unambiguous reference to the resource within a given context, e.g. ISBN.
+
+#### keywords
+
+`str` - Descriptive words or short phrases likely to be used as search terms for this document.
+
+#### language
+
+`str` - Language the document is written in.
+
+#### last_modified_by
+
+`str` - Name or other identifier (such as email address) of person who last modified the document.
+
+#### last_printed
+
+`datetime | None` - Time the document was last printed.
+
+#### modified
+
+`datetime | None` - Time the document was last modified.
+
+#### revision
+
+`int` - Number of this revision, incremented by PowerPoint each time the document is saved. Note that the revision number is not automatically incremented by python-pptx.
+
+#### subject
+
+`str` - The topic of the content of the resource.
+
+#### title
+
+`str` - The name given to the resource.
+
+#### version
+
+`str` - Free-form version string.
+
+### Notes
+
+- String properties are limited in length to 255 characters and return an empty string (`''`) if not set.
+- Date properties are assigned and returned as `datetime` objects without timezone (UTC).
+- Date properties return `None` if not set.
+- python-pptx does not automatically set any core properties except when adding a core properties part to a presentation that doesn't have one.
+
+```python
+from pptx import Presentation
+from datetime import datetime
+
+prs = Presentation()
+core_props = prs.core_properties
+
+core_props.title = "Quarterly Report"
+core_props.author = "Jane Smith"
+core_props.subject = "Q4 2023 Financial Results"
+core_props.keywords = "finance, quarterly, results"
+core_props.comments = "Draft version for review"
+core_props.category = "Financial Forecast"
+core_props.created = datetime(2023, 12, 1)
+```

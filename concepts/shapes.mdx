@@ -1,0 +1,557 @@
+---
+title: "Shapes"
+description: "Understanding shape types, the shape tree, and common shape operations"
+icon: "shapes"
+---
+
+Shapes are the building blocks of slides in PowerPoint. Nearly everything visible on a slide is a shape, from text boxes and images to tables and charts.
+
+## Shape types
+
+PowerPoint supports several fundamental shape types:
+
+### Auto shape
+
+Regular shapes like rectangles, circles, arrows, and text boxes:
+
+```python
+from pptx import Presentation
+from pptx.enum.shapes import MSO_SHAPE
+from pptx.util import Inches
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+# Add an auto shape
+left = top = Inches(1)
+width = height = Inches(2)
+shape = slide.shapes.add_shape(
+    MSO_SHAPE.ROUNDED_RECTANGLE,
+    left, top, width, height
+)
+shape.text = "Rounded Rectangle"
+```
+
+Auto shapes can have fill, outline, and text. Text boxes are auto shapes with no fill or outline by default.
+
+### Picture
+
+Raster images like photographs or clip art:
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+# Add picture
+img_path = 'logo.png'
+left = top = Inches(1)
+pic = slide.shapes.add_picture(img_path, left, top)
+
+# Or specify dimensions
+pic = slide.shapes.add_picture(
+    img_path,
+    left=Inches(2),
+    top=Inches(2),
+    width=Inches(3)
+)
+```
+
+### Graphic frame
+
+Containers for tables, charts, and SmartArt:
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+# Add table (creates graphic frame)
+rows = cols = 3
+left = top = Inches(1)
+width = Inches(6)
+height = Inches(2)
+graphic_frame = slide.shapes.add_table(rows, cols, left, top, width, height)
+table = graphic_frame.table
+
+# Add chart (creates graphic frame)
+from pptx.enum.chart import XL_CHART_TYPE
+from pptx.chart.data import ChartData
+
+chart_data = ChartData()
+chart_data.categories = ['Q1', 'Q2', 'Q3']
+chart_data.add_series('Sales', (100, 150, 125))
+
+x = y = Inches(1)
+cx = cy = Inches(4)
+graphic_frame = slide.shapes.add_chart(
+    XL_CHART_TYPE.COLUMN_CLUSTERED,
+    x, y, cx, cy, chart_data
+)
+chart = graphic_frame.chart
+```
+
+### Group shape
+
+A container for multiple shapes that can be manipulated as a unit:
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+# Create shapes first
+shape1 = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(1), Inches(1), Inches(1), Inches(1))
+shape2 = slide.shapes.add_shape(MSO_SHAPE.OVAL, Inches(2), Inches(1), Inches(1), Inches(1))
+
+# Group them
+group = slide.shapes.add_group_shape([shape1, shape2])
+```
+
+### Connector
+
+Lines that can connect to other shapes:
+
+```python
+from pptx import Presentation
+from pptx.enum.shapes import MSO_CONNECTOR_TYPE
+from pptx.util import Inches
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+connector = slide.shapes.add_connector(
+    MSO_CONNECTOR_TYPE.STRAIGHT,
+    begin_x=Inches(1),
+    begin_y=Inches(2),
+    end_x=Inches(4),
+    end_y=Inches(3)
+)
+```
+
+### Placeholder
+
+Special shapes that inherit formatting from layouts:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+
+# Access placeholders
+title_placeholder = slide.shapes.title
+
+# Check if shape is a placeholder
+for shape in slide.shapes:
+    if shape.is_placeholder:
+        print(f"Placeholder: {shape.name}")
+```
+
+See [Placeholders](/concepts/placeholders) for detailed information.
+
+## The shape tree
+
+Each slide has a shape tree (collection) that holds its shapes:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+
+# Access shape tree
+shapes = slide.shapes
+
+# Shape tree supports list operations
+count = len(shapes)
+first_shape = shapes[0]
+
+# Iterate through shapes
+for idx, shape in enumerate(shapes):
+    print(f"{idx}: {shape.name} (type: {shape.shape_type})")
+```
+
+The shape tree is hierarchical - group shapes can contain other shapes with the same semantics.
+
+## Common shape properties
+
+All shapes share these fundamental properties:
+
+### Position and size
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+shape = slide.shapes.add_textbox(Inches(1), Inches(1), Inches(3), Inches(2))
+
+# Read position and size (in EMU)
+left = shape.left
+top = shape.top
+width = shape.width
+height = shape.height
+
+# Modify position and size
+shape.left = Inches(2)
+shape.top = Inches(3)
+shape.width = Inches(4)
+shape.height = Inches(1.5)
+```
+
+Position and size are expressed in English Metric Units (EMU). Use `Inches()`, `Cm()`, or `Pt()` for convenience.
+
+### Rotation
+
+```python
+# Read rotation (degrees clockwise)
+rotation = shape.rotation
+
+# Set rotation
+shape.rotation = 45.0
+
+# Counter-clockwise rotation (becomes 315.0)
+shape.rotation = -45.0
+```
+
+### Name and ID
+
+```python
+# Shape name (user-visible in PowerPoint)
+print(shape.name)  # e.g., 'Rectangle 3'
+shape.name = 'Logo Image'
+
+# Shape ID (unique on slide, read-only)
+shape_id = shape.shape_id
+```
+
+### Shape type
+
+```python
+from pptx.enum.shapes import MSO_SHAPE_TYPE
+
+# Identify shape type
+if shape.shape_type == MSO_SHAPE_TYPE.PICTURE:
+    print("This is a picture")
+elif shape.shape_type == MSO_SHAPE_TYPE.PLACEHOLDER:
+    print("This is a placeholder")
+elif shape.shape_type == MSO_SHAPE_TYPE.AUTO_SHAPE:
+    print("This is an auto shape")
+```
+
+## Shape capabilities
+
+Different shapes support different features:
+
+### Text capability
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+shape = slide.shapes.add_textbox(Inches(1), Inches(1), Inches(3), Inches(1))
+
+# Check if shape can contain text
+if shape.has_text_frame:
+    text_frame = shape.text_frame
+    text_frame.text = "Hello, World!"
+    
+    # Add paragraphs
+    p = text_frame.add_paragraph()
+    p.text = "Second paragraph"
+```
+
+Auto shapes and placeholders can contain text. Pictures and connectors cannot.
+
+### Chart capability
+
+```python
+# Check if shape contains a chart
+if shape.has_chart:
+    chart = shape.chart
+    # Work with chart object
+```
+
+### Table capability
+
+```python
+# Check if shape contains a table
+if shape.has_table:
+    table = shape.table
+    # Work with table object
+```
+
+## Adding shapes
+
+The shapes collection provides methods to add different shape types:
+
+### Add text box
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+textbox = slide.shapes.add_textbox(
+    left=Inches(1),
+    top=Inches(2),
+    width=Inches(3),
+    height=Inches(1)
+)
+textbox.text = "Text box content"
+```
+
+### Add auto shape
+
+```python
+from pptx.enum.shapes import MSO_SHAPE
+from pptx.util import Inches
+
+shape = slide.shapes.add_shape(
+    MSO_SHAPE.ROUNDED_RECTANGLE,
+    left=Inches(1),
+    top=Inches(1),
+    width=Inches(2),
+    height=Inches(1.5)
+)
+shape.text = "Click here"
+```
+
+### Add picture
+
+```python
+from pptx.util import Inches
+
+picture = slide.shapes.add_picture(
+    'image.jpg',
+    left=Inches(1),
+    top=Inches(1),
+    width=Inches(3)  # height auto-calculated to maintain aspect ratio
+)
+```
+
+### Add table
+
+```python
+from pptx.util import Inches
+
+graphic_frame = slide.shapes.add_table(
+    rows=3,
+    cols=4,
+    left=Inches(1),
+    top=Inches(2),
+    width=Inches(6),
+    height=Inches(2)
+)
+table = graphic_frame.table
+table.cell(0, 0).text = "Header 1"
+```
+
+### Add chart
+
+```python
+from pptx.enum.chart import XL_CHART_TYPE
+from pptx.chart.data import ChartData
+from pptx.util import Inches
+
+chart_data = ChartData()
+chart_data.categories = ['East', 'West', 'North']
+chart_data.add_series('Sales', (100, 150, 75))
+
+graphic_frame = slide.shapes.add_chart(
+    XL_CHART_TYPE.BAR_CLUSTERED,
+    x=Inches(1),
+    y=Inches(2),
+    cx=Inches(6),
+    cy=Inches(4),
+    chart_data=chart_data
+)
+chart = graphic_frame.chart
+```
+
+## Shape styling
+
+### Fill
+
+```python
+from pptx import Presentation
+from pptx.enum.dml import MSO_FILL_TYPE
+from pptx.util import RGBColor
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+shape = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(1), Inches(1), Inches(3), Inches(2))
+
+# Solid fill
+fill = shape.fill
+fill.solid()
+fill.fore_color.rgb = RGBColor(255, 0, 0)
+
+# Gradient fill
+fill.gradient()
+fill.gradient_angle = 45.0
+```
+
+### Line (outline)
+
+```python
+from pptx.util import Pt, RGBColor
+
+line = shape.line
+line.color.rgb = RGBColor(0, 0, 255)
+line.width = Pt(2.5)
+```
+
+### Shadow
+
+```python
+shadow = shape.shadow
+shadow.inherit = False
+shadow.shadow_type = MSO_SHADOW.OUTER
+```
+
+## Click actions
+
+Add hyperlinks and click behaviors to shapes:
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+shape = slide.shapes.add_textbox(Inches(1), Inches(1), Inches(2), Inches(1))
+shape.text = "Click me"
+
+# Add hyperlink
+click_action = shape.click_action
+click_action.hyperlink.address = "https://example.com"
+
+# Jump to slide
+click_action.target_slide = prs.slides[0]
+```
+
+## Performance optimization
+
+When adding many shapes, enable turbo mode:
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+# Enable turbo mode for better performance
+slide.shapes.turbo_add_enabled = True
+
+# Add many shapes
+for i in range(1000):
+    shape = slide.shapes.add_textbox(
+        Inches(i % 10),
+        Inches(i // 10),
+        Inches(1),
+        Inches(0.5)
+    )
+    shape.text = f"Box {i}"
+
+# Disable when done
+slide.shapes.turbo_add_enabled = False
+```
+
+<Warning>
+Turbo mode caches shape IDs. Only use with a single Slide object to avoid ID collisions.
+</Warning>
+
+## Complete example
+
+Create a slide with multiple shape types:
+
+```python
+from pptx import Presentation
+from pptx.enum.shapes import MSO_SHAPE
+from pptx.util import Inches, Pt, RGBColor
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+# Add title
+title = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(0.5))
+title.text = "Shape Examples"
+title_para = title.text_frame.paragraphs[0]
+title_para.font.size = Pt(32)
+title_para.font.bold = True
+
+# Add rectangle with text
+rect = slide.shapes.add_shape(
+    MSO_SHAPE.ROUNDED_RECTANGLE,
+    Inches(1), Inches(2), Inches(3), Inches(1.5)
+)
+rect.text = "Call to Action"
+rect.fill.solid()
+rect.fill.fore_color.rgb = RGBColor(68, 114, 196)
+rect.line.color.rgb = RGBColor(0, 0, 0)
+
+# Add picture
+pic = slide.shapes.add_picture(
+    'logo.png',
+    Inches(5), Inches(2), width=Inches(2)
+)
+
+# Add connector
+connector = slide.shapes.add_connector(
+    MSO_CONNECTOR_TYPE.STRAIGHT,
+    Inches(4), Inches(2.75),
+    Inches(5), Inches(2.75)
+)
+
+prs.save('shapes-demo.pptx')
+```
+
+## API reference
+
+### BaseShape class
+
+**Properties:**
+- `click_action` - ActionSetting for hyperlinks/click behavior
+- `has_chart` - True if contains chart
+- `has_table` - True if contains table  
+- `has_text_frame` - True if can contain text
+- `height` - Height in EMU (read/write)
+- `is_placeholder` - True if is a placeholder
+- `left` - Left position in EMU (read/write)
+- `name` - Shape name (read/write)
+- `rotation` - Rotation in degrees (read/write)
+- `shadow` - ShadowFormat object
+- `shape_id` - Unique integer ID (read-only)
+- `shape_type` - MSO_SHAPE_TYPE member
+- `top` - Top position in EMU (read/write)
+- `width` - Width in EMU (read/write)
+
+### Shape collections
+
+**Methods:**
+- `add_chart()` - Add chart graphic frame
+- `add_connector()` - Add connector line
+- `add_group_shape()` - Add group shape container
+- `add_picture()` - Add picture from file
+- `add_shape()` - Add auto shape
+- `add_table()` - Add table graphic frame
+- `add_textbox()` - Add text box
+
+**Properties:**
+- `turbo_add_enabled` - Enable performance mode (read/write)
+- `title` - Title placeholder if present
+
+**Supports:** indexing `[i]`, `len()`, iteration

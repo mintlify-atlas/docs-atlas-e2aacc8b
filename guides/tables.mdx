@@ -1,0 +1,401 @@
+---
+title: Working with tables
+description: Learn how to create and format tables in PowerPoint presentations
+---
+
+Tables in PowerPoint organize data into aligned rows and columns. python-pptx provides comprehensive support for creating, formatting, and manipulating tables.
+
+## Adding a table
+
+Tables are added to slides using the `add_table()` method:
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[5])
+
+# Add a 3x3 table
+x, y, cx, cy = Inches(2), Inches(2), Inches(4), Inches(1.5)
+shape = slide.shapes.add_table(3, 3, x, y, cx, cy)
+
+# Access the table object
+table = shape.table
+
+prs.save('table-example.pptx')
+```
+
+<Note>
+`add_table()` returns a GraphicFrame shape that contains the table, not the table itself. Access the table via the `table` property.
+</Note>
+
+### Understanding table structure
+
+A PowerPoint table consists of:
+
+- **Cells**: Individual content containers within the table
+- **Rows**: Horizontal sequences of cells
+- **Columns**: Vertical sequences of cells
+- **Grid**: The underlying cell structure (may be obscured by merged cells)
+
+## Accessing cells
+
+Access individual cells using zero-based row and column indices:
+
+```python
+# Get cell at row 0, column 0 (top-left)
+cell = table.cell(0, 0)
+
+# Set cell text
+cell.text = 'Header 1'
+
+# Access cell at row 1, column 2
+cell = table.cell(1, 2)
+cell.text = 'Data'
+```
+
+### Iterating through cells
+
+Iterate through all cells in the table:
+
+```python
+# Iterate all cells (left-to-right, top-to-bottom)
+for cell in table.iter_cells():
+    if not cell.is_spanned:
+        cell.text = 'Content'
+
+# Iterate only visible cells (not spanned by merged cells)
+visible_cells = (cell for cell in table.iter_cells() if not cell.is_spanned)
+for cell in visible_cells:
+    print(cell.text)
+```
+
+## Working with rows and columns
+
+Access rows and columns using list notation:
+
+```python
+# Access specific row
+row = table.rows[0]
+row.height = Inches(0.5)
+
+# Access specific column
+col = table.columns[1]
+col.width = Inches(2)
+
+# Iterate rows
+for row in table.rows:
+    print(f"Row height: {row.height.inches} inches")
+
+# Iterate columns
+for col in table.columns:
+    print(f"Column width: {col.width.inches} inches")
+```
+
+## Formatting cells
+
+Cells contain a text frame and can be formatted like auto shapes:
+
+<Tabs>
+  <Tab title="Text formatting">
+    ```python
+    from pptx.util import Pt
+    from pptx.enum.text import PP_ALIGN
+
+    cell = table.cell(0, 0)
+    cell.text = 'Header'
+
+    # Format text
+    paragraph = cell.text_frame.paragraphs[0]
+    paragraph.alignment = PP_ALIGN.CENTER
+    paragraph.font.size = Pt(14)
+    paragraph.font.bold = True
+    ```
+  </Tab>
+  <Tab title="Cell fill">
+    ```python
+    from pptx.dml.color import RGBColor
+    from pptx.enum.dml import MSO_THEME_COLOR
+
+    cell = table.cell(0, 0)
+
+    # Solid color fill
+    fill = cell.fill
+    fill.solid()
+    fill.fore_color.rgb = RGBColor(0x4A, 0x90, 0xE2)
+
+    # Or use theme color
+    fill.fore_color.theme_color = MSO_THEME_COLOR.ACCENT_1
+    ```
+  </Tab>
+  <Tab title="Cell margins">
+    ```python
+    from pptx.util import Inches
+    from pptx.enum.text import MSO_ANCHOR
+
+    cell = table.cell(0, 0)
+
+    # Set margins
+    cell.margin_left = Inches(0.1)
+    cell.margin_right = Inches(0.1)
+    cell.margin_top = Inches(0.05)
+    cell.margin_bottom = Inches(0.05)
+
+    # Vertical alignment
+    cell.vertical_anchor = MSO_ANCHOR.MIDDLE
+    ```
+  </Tab>
+</Tabs>
+
+## Merging cells
+
+Merge cells by specifying two diagonal corners:
+
+```python
+# Merge cells from (0,0) to (1,1) - creates a 2x2 merged cell
+cell = table.cell(0, 0)
+other_cell = table.cell(1, 1)
+cell.merge(other_cell)
+
+# Check if cell is merge origin
+if cell.is_merge_origin:
+    print(f"Merged cell: {cell.span_height} rows x {cell.span_width} cols")
+
+# Check if cell is spanned
+if table.cell(0, 1).is_spanned:
+    print("This cell is hidden by a merged cell")
+```
+
+<Note>
+The merge origin is always the top-left cell of the merged region. Content from all merged cells is migrated to the merge origin as separate paragraphs.
+</Note>
+
+### Splitting merged cells
+
+Split a merged cell back to individual grid cells:
+
+```python
+cell = table.cell(0, 0)
+
+if cell.is_merge_origin:
+    cell.split()  # Restores underlying grid cells
+```
+
+<Warning>
+Splitting a merged cell does not reverse the content migration that occurred during the merge.
+</Warning>
+
+## Table styling
+
+Apply table-level formatting options:
+
+```python
+# Enable first row as header
+table.first_row = True
+
+# Enable first column formatting
+table.first_col = True
+
+# Enable last row formatting (for totals)
+table.last_row = True
+
+# Enable last column formatting
+table.last_col = True
+
+# Enable horizontal banding (alternating row colors)
+table.horz_banding = True
+
+# Enable vertical banding
+table.vert_banding = False
+```
+
+<Note>
+These properties apply formatting defined in the table style. The actual visual effect depends on the table style in use.
+</Note>
+
+## Complete examples
+
+<CodeGroup>
+```python Basic data table
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from pptx.enum.text import PP_ALIGN
+from pptx.dml.color import RGBColor
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[5])
+
+# Create table
+shape = slide.shapes.add_table(
+    rows=4, cols=3,
+    left=Inches(1), top=Inches(1.5),
+    width=Inches(8), height=Inches(3)
+)
+table = shape.table
+
+# Headers
+headers = ['Product', 'Q1 Sales', 'Q2 Sales']
+for col_idx, header in enumerate(headers):
+    cell = table.cell(0, col_idx)
+    cell.text = header
+    
+    # Format header
+    paragraph = cell.text_frame.paragraphs[0]
+    paragraph.alignment = PP_ALIGN.CENTER
+    paragraph.font.size = Pt(12)
+    paragraph.font.bold = True
+    
+    # Header background
+    cell.fill.solid()
+    cell.fill.fore_color.rgb = RGBColor(0x4A, 0x90, 0xE2)
+
+# Data rows
+data = [
+    ['Widget A', '$1,234', '$1,456'],
+    ['Widget B', '$2,345', '$2,567'],
+    ['Widget C', '$3,456', '$3,678']
+]
+
+for row_idx, row_data in enumerate(data, start=1):
+    for col_idx, value in enumerate(row_data):
+        cell = table.cell(row_idx, col_idx)
+        cell.text = value
+        
+        # Center align numbers
+        if col_idx > 0:
+            paragraph = cell.text_frame.paragraphs[0]
+            paragraph.alignment = PP_ALIGN.CENTER
+
+# Enable table styling
+table.first_row = True
+table.horz_banding = True
+
+prs.save('data-table.pptx')
+```
+
+```python Table with merged cells
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
+from pptx.dml.color import RGBColor
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[5])
+
+# Create 5x3 table
+shape = slide.shapes.add_table(
+    rows=5, cols=3,
+    left=Inches(2), top=Inches(1.5),
+    width=Inches(6), height=Inches(3)
+)
+table = shape.table
+
+# Merge cells for title row
+title_cell = table.cell(0, 0)
+table.cell(0, 0).merge(table.cell(0, 2))
+title_cell.text = 'Quarterly Report'
+
+# Format title
+paragraph = title_cell.text_frame.paragraphs[0]
+paragraph.alignment = PP_ALIGN.CENTER
+paragraph.font.size = Pt(18)
+paragraph.font.bold = True
+title_cell.vertical_anchor = MSO_ANCHOR.MIDDLE
+
+# Add headers
+headers = ['Region', 'Q1', 'Q2']
+for col_idx, header in enumerate(headers):
+    cell = table.cell(1, col_idx)
+    cell.text = header
+    cell.text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
+
+# Add data
+data = [
+    ['North', '125', '142'],
+    ['South', '98', '107'],
+    ['East', '156', '168']
+]
+
+for row_idx, row_data in enumerate(data, start=2):
+    for col_idx, value in enumerate(row_data):
+        table.cell(row_idx, col_idx).text = value
+
+prs.save('merged-table.pptx')
+```
+</CodeGroup>
+
+## Advanced techniques
+
+### Finding merged cells
+
+```python
+def iter_merge_origins(table):
+    """Generate each merge-origin cell in table."""
+    return (cell for cell in table.iter_cells() if cell.is_merge_origin)
+
+def merged_cell_report(cell):
+    """Return string describing merged cell."""
+    return (
+        f'merged cell at row {cell.row_idx}, col {cell.col_idx}, '
+        f'{cell.span_height} cells high and {cell.span_width} cells wide'
+    )
+
+# Print report of all merged cells
+for merge_origin_cell in iter_merge_origins(table):
+    print(merged_cell_report(merge_origin_cell))
+```
+
+### Checking for merged cells
+
+```python
+def has_merged_cells(table):
+    """Return True if table contains any merged cells."""
+    for cell in table.iter_cells():
+        if cell.is_merge_origin:
+            return True
+    return False
+
+if has_merged_cells(table):
+    print("Table contains merged cells")
+```
+
+### Accessing only visible cells
+
+```python
+def iter_visible_cells(table):
+    """Generate cells that display text (not spanned)."""
+    return (cell for cell in table.iter_cells() if not cell.is_spanned)
+
+# Set text for all visible cells
+for idx, cell in enumerate(iter_visible_cells(table)):
+    cell.text = f'Cell {idx}'
+```
+
+## Inserting tables into placeholders
+
+Use table placeholders from slide layouts:
+
+```python
+prs = Presentation('template.pptx')
+slide = prs.slides.add_slide(prs.slide_layouts[2])  # Layout with table placeholder
+
+# Access table placeholder (usually at index 1)
+table_placeholder = slide.shapes[1]
+
+# Insert table
+shape = table_placeholder.insert_table(rows=3, cols=4)
+table = shape.table
+
+# Populate table...
+```
+
+## Best practices
+
+- Enable `first_row` for tables with headers
+- Use `horz_banding` for better readability of data rows
+- Merge cells only when necessary (complex merging can be confusing)
+- Always check `is_spanned` when iterating cells to avoid hidden cells
+- Use consistent cell margins for professional appearance
+- Center-align headers for better visual balance
+- Set explicit column widths for data-heavy tables

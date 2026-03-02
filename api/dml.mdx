@@ -1,0 +1,49 @@
+---
+title: DrawingML Objects
+description: Low-level drawing elements like fill, color, and line that appear in various aspects of shapes.
+---
+
+DrawingML objects provide access to formatting properties for shapes, charts, and other visual elements in PowerPoint presentations. These objects handle fill colors, line styles, and other visual attributes.
+
+## Overview
+
+The DrawingML API includes several core formatting classes:
+
+- **[ColorFormat](/api/color)** - Access to color settings including RGB and theme colors
+- **[FillFormat](/api/fill)** - Fill properties for shapes (solid, gradient, pattern, etc.)
+- **[LineFormat](/api/line)** - Line and border formatting properties
+- **ChartFormat** - Visual properties for chart elements
+
+## ChartFormat
+
+The `ChartFormat` object provides access to visual shape properties for chart elements like axes, series, and gridlines.
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+chart = prs.slides[0].shapes[0].chart
+
+# Access chart element formatting
+axis_format = chart.value_axis.format
+axis_format.line.color.rgb = RGBColor(255, 0, 0)
+axis_format.fill.solid()
+```
+
+### Properties
+
+<ParamField path="fill" type="FillFormat">
+  FillFormat instance for this object, providing access to fill properties such as fill color.
+</ParamField>
+
+<ParamField path="line" type="LineFormat">
+  LineFormat object providing access to visual properties such as line color and line style.
+</ParamField>
+
+## Related Objects
+
+For detailed information about specific formatting objects, see:
+
+- [ColorFormat API](/api/color)
+- [FillFormat API](/api/fill)
+- [LineFormat API](/api/line)

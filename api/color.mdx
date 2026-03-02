@@ -1,0 +1,155 @@
+---
+title: ColorFormat
+description: Access to color settings such as RGB color, theme color, and luminance adjustments.
+---
+
+The `ColorFormat` object provides access to color properties for fills, lines, and fonts. It supports RGB colors, theme colors, and brightness adjustments.
+
+## Usage
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+from pptx.dml.color import RGBColor
+from pptx.enum.dml import MSO_THEME_COLOR
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+shape = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(1), Inches(1), Inches(2), Inches(1))
+
+# Set RGB color
+shape.fill.solid()
+shape.fill.fore_color.rgb = RGBColor(255, 127, 0)
+
+# Use theme color
+shape.fill.fore_color.theme_color = MSO_THEME_COLOR.ACCENT_1
+
+# Adjust brightness
+shape.fill.fore_color.brightness = 0.25  # 25% lighter
+```
+
+## ColorFormat Properties
+
+<ParamField path="brightness" type="float">
+  Read/write float value between -1.0 and 1.0 indicating brightness adjustment.
+  
+  - Negative values make the color darker (e.g., -0.25 is 25% darker)
+  - Positive values make the color lighter (e.g., 0.4 is 40% lighter)
+  - 0 means no brightness adjustment
+  
+  Raises `ValueError` if color type is None. Set `rgb` or `theme_color` first.
+</ParamField>
+
+<ParamField path="rgb" type="RGBColor | None">
+  RGBColor value of this color, or None if no RGB color is defined.
+  
+  Setting this value to an RGBColor instance causes the color type to change to `MSO_COLOR_TYPE.RGB`. Any brightness adjustment on a theme color is removed when changing to RGB.
+  
+  ```python
+  shape.fill.fore_color.rgb = RGBColor(255, 127, 0)
+  ```
+</ParamField>
+
+<ParamField path="theme_color" type="MSO_THEME_COLOR">
+  Theme color value from the `MSO_THEME_COLOR` enumeration.
+  
+  Examples: `MSO_THEME_COLOR.ACCENT_1`, `MSO_THEME_COLOR.DARK_1`
+  
+  Raises `AttributeError` if accessed when color is not type `MSO_COLOR_TYPE.SCHEME`. Assigning a theme color value causes the color's type to change to `MSO_COLOR_TYPE.SCHEME`.
+  
+  ```python
+  shape.fill.fore_color.theme_color = MSO_THEME_COLOR.ACCENT_1
+  shape.fill.fore_color.brightness = -0.25  # 25% darker accent color
+  ```
+</ParamField>
+
+<ParamField path="type" type="MSO_COLOR_TYPE | None">
+  Read-only. The type of this color definition.
+  
+  Values from `MSO_COLOR_TYPE` enumeration:
+  - `MSO_COLOR_TYPE.RGB` - Defined by RGB values
+  - `MSO_COLOR_TYPE.SCHEME` - Defined by theme color
+  - `MSO_COLOR_TYPE.HSL` - Defined by hue, saturation, luminance
+  - `MSO_COLOR_TYPE.PRESET` - Preset color name
+  - `MSO_COLOR_TYPE.SCRGB` - ScRGB color space
+  - `MSO_COLOR_TYPE.SYSTEM` - System color
+  - `None` - No color defined
+</ParamField>
+
+## RGBColor
+
+Immutable value object defining a particular RGB color.
+
+### Constructor
+
+```python
+RGBColor(r, g, b)
+```
+
+<ParamField path="r" type="int" required>
+  Red component (0-255)
+</ParamField>
+
+<ParamField path="g" type="int" required>
+  Green component (0-255)
+</ParamField>
+
+<ParamField path="b" type="int" required>
+  Blue component (0-255)
+</ParamField>
+
+### Class Methods
+
+<ParamField path="from_string(rgb_hex_str)" type="classmethod">
+  Return a new RGBColor instance from a hex string.
+  
+  ```python
+  color = RGBColor.from_string('3C2F80')
+  # Equivalent to RGBColor(60, 47, 128)
+  ```
+  
+  <ParamField path="rgb_hex_str" type="str" required>
+    RGB color as a hex string like `'3C2F80'` (without '#' prefix)
+  </ParamField>
+  
+  <ResponseField name="return" type="RGBColor">
+    New RGBColor instance
+  </ResponseField>
+</ParamField>
+
+### String Representation
+
+When converted to string, RGBColor returns a hex string:
+
+```python
+color = RGBColor(60, 47, 128)
+str(color)  # Returns '3C2F80'
+```
+
+## Examples
+
+### Setting RGB Color
+
+```python
+from pptx.dml.color import RGBColor
+
+shape.fill.solid()
+shape.fill.fore_color.rgb = RGBColor(255, 127, 0)  # Orange
+```
+
+### Using Theme Colors
+
+```python
+from pptx.enum.dml import MSO_THEME_COLOR
+
+shape.fill.solid()
+shape.fill.fore_color.theme_color = MSO_THEME_COLOR.ACCENT_1
+shape.fill.fore_color.brightness = -0.25  # 25% darker
+```
+
+### Creating Colors from Hex Strings
+
+```python
+color = RGBColor.from_string('FF7F00')  # Orange
+shape.fill.fore_color.rgb = color
+```

@@ -1,0 +1,293 @@
+---
+title: Working with text
+description: Learn how to add and format text in PowerPoint presentations using TextFrames, paragraphs, and runs
+---
+
+Text in python-pptx exists in a three-level hierarchy: **TextFrame** → **Paragraph** → **Run**. All text in a shape is contained in its text frame, which contains one or more paragraphs, each of which contains one or more runs.
+
+## Understanding the text hierarchy
+
+Text is always manipulated the same way, regardless of its container:
+
+- **TextFrame**: The container for all text in a shape. Has properties like vertical alignment, margins, wrapping, and auto-fit behavior.
+- **Paragraph**: A block of text with its own formatting like alignment, spacing, and bullet points. A text frame always contains at least one paragraph.
+- **Run**: The smallest unit that can hold text. Used to apply character-level formatting like font, size, color, bold, and italic.
+
+<Note>
+Only auto shapes and table cells can contain text. Other shapes cannot have a text frame.
+</Note>
+
+## Checking for text frames
+
+Not all shapes have a text frame. Check before accessing to avoid exceptions:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[5])
+
+for shape in slide.shapes:
+    if not shape.has_text_frame:
+        continue
+    text_frame = shape.text_frame
+    # Work with the text frame
+    ...
+```
+
+## Adding text to shapes
+
+<Tabs>
+  <Tab title="Simple text">
+    The simplest way to add text is by setting the `.text` property directly:
+
+    ```python
+    from pptx import Presentation
+    from pptx.util import Inches
+    from pptx.enum.shapes import MSO_SHAPE
+
+    prs = Presentation()
+    slide = prs.slides.add_slide(prs.slide_layouts[5])
+
+    # Add a shape and set its text
+    shape = slide.shapes.add_shape(
+        MSO_SHAPE.ROUNDED_RECTANGLE,
+        Inches(1), Inches(1),
+        Inches(4), Inches(2)
+    )
+    shape.text = 'Hello, python-pptx!'
+
+    prs.save('text-example.pptx')
+    ```
+  </Tab>
+  <Tab title="Multiple paragraphs">
+    To add multiple paragraphs, use `add_paragraph()`:
+
+    ```python
+    from pptx.enum.text import PP_ALIGN
+
+    paragraph_strs = [
+        'Egg, bacon, sausage and spam.',
+        'Spam, bacon, sausage and spam.',
+        'Spam, egg, spam, spam, bacon and spam.'
+    ]
+
+    text_frame = shape.text_frame
+    text_frame.clear()  # Remove existing paragraphs
+
+    # Set first paragraph
+    p = text_frame.paragraphs[0]
+    p.text = paragraph_strs[0]
+    p.alignment = PP_ALIGN.LEFT
+
+    # Add remaining paragraphs
+    for para_str in paragraph_strs[1:]:
+        p = text_frame.add_paragraph()
+        p.text = para_str
+        p.alignment = PP_ALIGN.LEFT
+        p.level = 1  # Indent like a sub-bullet
+    ```
+  </Tab>
+</Tabs>
+
+## Text frame formatting
+
+The TextFrame provides control over how text behaves within the shape:
+
+```python
+from pptx.util import Inches
+from pptx.enum.text import MSO_ANCHOR, MSO_AUTO_SIZE
+
+text_frame = shape.text_frame
+text_frame.text = 'Spam, eggs, and spam'
+
+# Margins
+text_frame.margin_bottom = Inches(0.08)
+text_frame.margin_left = 0
+text_frame.margin_right = Inches(0.05)
+text_frame.margin_top = Inches(0.05)
+
+# Alignment and wrapping
+text_frame.vertical_anchor = MSO_ANCHOR.TOP
+text_frame.word_wrap = False
+
+# Auto-size behavior
+text_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
+```
+
+### Auto-size options
+
+The `auto_size` property accepts these values from `MSO_AUTO_SIZE`:
+
+- `NONE`: No automatic resizing
+- `SHAPE_TO_FIT_TEXT`: Expands the shape to fit the text
+- `TEXT_TO_FIT_SHAPE`: Shrinks the text to fit within the shape
+
+### Vertical alignment options
+
+The `vertical_anchor` property accepts these values from `MSO_ANCHOR`:
+
+- `TOP`: Align text to the top
+- `MIDDLE`: Center text vertically
+- `BOTTOM`: Align text to the bottom
+
+## Paragraph formatting
+
+Paragraphs control spacing, alignment, and indentation:
+
+```python
+from pptx.enum.text import PP_ALIGN
+from pptx.util import Pt
+
+p = text_frame.paragraphs[0]
+
+# Alignment
+p.alignment = PP_ALIGN.CENTER
+
+# Spacing
+p.line_spacing = 1.5  # 1.5 line spacing
+p.space_before = Pt(12)
+p.space_after = Pt(12)
+
+# Indentation level (0-8)
+p.level = 0  # 0 is outermost, 1 is first indent level, etc.
+```
+
+### Paragraph alignment options
+
+The `alignment` property accepts these values from `PP_ALIGN`:
+
+- `LEFT`: Left-aligned
+- `CENTER`: Center-aligned
+- `RIGHT`: Right-aligned
+- `JUSTIFY`: Justified
+- `DISTRIBUTE`: Distributed (similar to justified)
+
+## Character formatting with runs
+
+Runs provide character-level formatting. Create runs to apply different formatting to different parts of the text:
+
+<Steps>
+  <Step title="Create a run">
+    ```python
+    text_frame = shape.text_frame
+    text_frame.clear()
+
+    p = text_frame.paragraphs[0]
+    run = p.add_run()
+    run.text = 'Spam, eggs, and spam'
+    ```
+  </Step>
+  <Step title="Format the font">
+    ```python
+    from pptx.util import Pt
+
+    font = run.font
+    font.name = 'Calibri'
+    font.size = Pt(18)
+    font.bold = True
+    font.italic = False
+    ```
+  </Step>
+  <Step title="Set colors">
+    ```python
+    from pptx.dml.color import RGBColor
+    from pptx.enum.dml import MSO_THEME_COLOR
+
+    # RGB color
+    font.color.rgb = RGBColor(0xFF, 0x7F, 0x50)
+
+    # Or use theme colors
+    font.color.theme_color = MSO_THEME_COLOR.ACCENT_1
+    font.color.brightness = -0.25  # 25% darker
+    ```
+  </Step>
+</Steps>
+
+### Font properties
+
+The `font` object provides these properties:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `name` | str | Font typeface (e.g., 'Calibri', 'Arial') |
+| `size` | Length | Font size (use `Pt()` for points) |
+| `bold` | bool | Bold formatting |
+| `italic` | bool | Italic formatting |
+| `underline` | bool | Underline formatting |
+| `color` | ColorFormat | Font color |
+
+<Note>
+Setting a font property to `None` causes the value to be inherited from the theme.
+</Note>
+
+## Adding hyperlinks
+
+Make any run a hyperlink by setting its `hyperlink.address`:
+
+```python
+run = p.add_run()
+run.text = 'python-pptx documentation'
+run.hyperlink.address = 'https://python-pptx.readthedocs.io'
+```
+
+## Complete example
+
+<CodeGroup>
+```python Formatted text example
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from pptx.enum.shapes import MSO_SHAPE
+from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
+from pptx.dml.color import RGBColor
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[5])
+
+# Add shape
+shape = slide.shapes.add_shape(
+    MSO_SHAPE.ROUNDED_RECTANGLE,
+    Inches(1), Inches(1),
+    Inches(5), Inches(3)
+)
+
+# Configure text frame
+text_frame = shape.text_frame
+text_frame.clear()
+text_frame.margin_left = Inches(0.1)
+text_frame.vertical_anchor = MSO_ANCHOR.TOP
+
+# Add title paragraph
+p = text_frame.paragraphs[0]
+p.alignment = PP_ALIGN.CENTER
+run = p.add_run()
+run.text = 'Product Features'
+run.font.name = 'Arial'
+run.font.size = Pt(24)
+run.font.bold = True
+run.font.color.rgb = RGBColor(0x00, 0x50, 0x80)
+
+# Add bullet points
+features = ['Fast', 'Reliable', 'Easy to use']
+for feature in features:
+    p = text_frame.add_paragraph()
+    p.text = feature
+    p.level = 0
+    p.alignment = PP_ALIGN.LEFT
+    p.font.size = Pt(18)
+
+prs.save('formatted-text.pptx')
+```
+</CodeGroup>
+
+## Best practices
+
+<Warning>
+**Performance tip**: When adding text to many shapes, consider using `text_frame.clear()` only when necessary, as it can impact performance.
+</Warning>
+
+- Use theme colors instead of RGB when possible for consistency across presentations
+- Set font properties to `None` to inherit from the theme
+- Always check `has_text_frame` before accessing a shape's text frame
+- Use `Pt()` for font sizes to ensure proper rendering across different displays
+- Group related text formatting operations together for better code organization

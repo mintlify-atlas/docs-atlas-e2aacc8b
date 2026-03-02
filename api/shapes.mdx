@@ -1,0 +1,766 @@
+---
+title: Shapes
+description: API reference for shape objects and shape collections
+---
+
+## Shape collections
+
+### SlideShapes
+
+Sequence of shapes appearing on a slide. The first shape in the sequence is the backmost in z-order and the last shape is topmost. Supports indexed access, `len()`, `index()`, and iteration.
+
+Accessed via the `shapes` property of a Slide object.
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[0])
+shapes = slide.shapes
+```
+
+#### Methods
+
+##### add_chart()
+
+Add a new chart to the slide.
+
+<ParamField path="chart_type" type="XL_CHART_TYPE" required>
+  Chart type from the XlChartType enumeration
+</ParamField>
+
+<ParamField path="x" type="Length" required>
+  Horizontal position of chart in EMU
+</ParamField>
+
+<ParamField path="y" type="Length" required>
+  Vertical position of chart in EMU
+</ParamField>
+
+<ParamField path="cx" type="Length" required>
+  Width of chart in EMU
+</ParamField>
+
+<ParamField path="cy" type="Length" required>
+  Height of chart in EMU
+</ParamField>
+
+<ParamField path="chart_data" type="ChartData" required>
+  ChartData object containing the data for the chart
+</ParamField>
+
+<ResponseField name="return" type="GraphicFrame">
+  GraphicFrame shape containing the chart. Access the chart via the `.chart` property.
+</ResponseField>
+
+```python
+from pptx.chart.data import ChartData
+from pptx.enum.chart import XL_CHART_TYPE
+from pptx.util import Inches
+
+chart_data = ChartData()
+chart_data.categories = ['Q1', 'Q2', 'Q3', 'Q4']
+chart_data.add_series('Sales', (100, 150, 200, 250))
+
+graphic_frame = shapes.add_chart(
+    XL_CHART_TYPE.COLUMN_CLUSTERED,
+    Inches(2), Inches(2), Inches(6), Inches(4.5),
+    chart_data
+)
+chart = graphic_frame.chart
+```
+
+##### add_connector()
+
+Add a newly created connector shape to the slide.
+
+<ParamField path="connector_type" type="MSO_CONNECTOR_TYPE" required>
+  Type of connector from MsoConnectorType enumeration
+</ParamField>
+
+<ParamField path="begin_x" type="Length" required>
+  Horizontal position of begin point in EMU
+</ParamField>
+
+<ParamField path="begin_y" type="Length" required>
+  Vertical position of begin point in EMU
+</ParamField>
+
+<ParamField path="end_x" type="Length" required>
+  Horizontal position of end point in EMU
+</ParamField>
+
+<ParamField path="end_y" type="Length" required>
+  Vertical position of end point in EMU
+</ParamField>
+
+<ResponseField name="return" type="Connector">
+  The newly created connector shape
+</ResponseField>
+
+```python
+from pptx.enum.shapes import MSO_CONNECTOR_TYPE
+from pptx.util import Inches
+
+connector = shapes.add_connector(
+    MSO_CONNECTOR_TYPE.STRAIGHT,
+    Inches(1), Inches(1),
+    Inches(5), Inches(3)
+)
+```
+
+##### add_group_shape()
+
+Return a newly appended group shape.
+
+<ParamField path="shapes" type="Iterable[BaseShape]" default="()">
+  Optional sequence of shapes to include in the group
+</ParamField>
+
+<ResponseField name="return" type="GroupShape">
+  The newly created group shape
+</ResponseField>
+
+The group shape is initially empty unless shapes are provided. The position and extents of the group shape are determined by the shapes it contains.
+
+```python
+group = shapes.add_group_shape()
+# Add shapes to the group via group.shapes
+```
+
+##### add_picture()
+
+Add a picture shape displaying the specified image.
+
+<ParamField path="image_file" type="str | IO[bytes]" required>
+  Path to image file (string) or file-like object containing image bytes
+</ParamField>
+
+<ParamField path="left" type="Length" required>
+  Horizontal position of left edge in EMU
+</ParamField>
+
+<ParamField path="top" type="Length" required>
+  Vertical position of top edge in EMU
+</ParamField>
+
+<ParamField path="width" type="Length | None" default="None">
+  Width of picture in EMU. If None, native image width is used.
+</ParamField>
+
+<ParamField path="height" type="Length | None" default="None">
+  Height of picture in EMU. If None, native image height is used.
+</ParamField>
+
+<ResponseField name="return" type="Picture">
+  The newly created picture shape
+</ResponseField>
+
+If both width and height are `None`, the native size of the image is used. If only one is specified, the other is calculated to preserve aspect ratio. If both are specified, the picture is stretched to fit.
+
+```python
+from pptx.util import Inches
+
+picture = shapes.add_picture(
+    'company-logo.png',
+    Inches(1), Inches(1),
+    width=Inches(2)
+)
+```
+
+##### add_shape()
+
+Return a new autoshape appended to the slide.
+
+<ParamField path="autoshape_type_id" type="MSO_SHAPE" required>
+  Member of MsoAutoShapeType enumeration specifying the shape type
+</ParamField>
+
+<ParamField path="left" type="Length" required>
+  Horizontal position in EMU
+</ParamField>
+
+<ParamField path="top" type="Length" required>
+  Vertical position in EMU
+</ParamField>
+
+<ParamField path="width" type="Length" required>
+  Width in EMU
+</ParamField>
+
+<ParamField path="height" type="Length" required>
+  Height in EMU
+</ParamField>
+
+<ResponseField name="return" type="Shape">
+  The newly created shape
+</ResponseField>
+
+```python
+from pptx.enum.shapes import MSO_SHAPE
+from pptx.util import Inches
+
+shape = shapes.add_shape(
+    MSO_SHAPE.ROUNDED_RECTANGLE,
+    Inches(1), Inches(1),
+    Inches(3), Inches(2)
+)
+shape.text = "Click here"
+```
+
+##### add_table()
+
+Add a table to the slide.
+
+<ParamField path="rows" type="int" required>
+  Number of rows in the table
+</ParamField>
+
+<ParamField path="cols" type="int" required>
+  Number of columns in the table
+</ParamField>
+
+<ParamField path="left" type="Length" required>
+  Horizontal position in EMU
+</ParamField>
+
+<ParamField path="top" type="Length" required>
+  Vertical position in EMU
+</ParamField>
+
+<ParamField path="width" type="Length" required>
+  Total width of table in EMU
+</ParamField>
+
+<ParamField path="height" type="Length" required>
+  Total height of table in EMU
+</ParamField>
+
+<ResponseField name="return" type="GraphicFrame">
+  GraphicFrame shape containing the table. Access the table via the `.table` property.
+</ResponseField>
+
+The width is evenly distributed between columns. The height is evenly distributed between rows.
+
+```python
+from pptx.util import Inches
+
+graphic_frame = shapes.add_table(
+    3, 4,  # 3 rows, 4 columns
+    Inches(1), Inches(2),
+    Inches(6), Inches(3)
+)
+table = graphic_frame.table
+table.cell(0, 0).text = "Header 1"
+```
+
+##### add_textbox()
+
+Return a newly added text box shape.
+
+<ParamField path="left" type="Length" required>
+  Horizontal position in EMU
+</ParamField>
+
+<ParamField path="top" type="Length" required>
+  Vertical position in EMU
+</ParamField>
+
+<ParamField path="width" type="Length" required>
+  Width in EMU
+</ParamField>
+
+<ParamField path="height" type="Length" required>
+  Height in EMU
+</ParamField>
+
+<ResponseField name="return" type="Shape">
+  The newly created text box shape
+</ResponseField>
+
+```python
+from pptx.util import Inches
+
+textbox = shapes.add_textbox(
+    Inches(1), Inches(1),
+    Inches(4), Inches(1)
+)
+textbox.text = "This is a text box"
+```
+
+##### build_freeform()
+
+Return a FreeformBuilder object to specify a freeform shape.
+
+<ParamField path="start_x" type="float" default="0">
+  Starting X position in local coordinates
+</ParamField>
+
+<ParamField path="start_y" type="float" default="0">
+  Starting Y position in local coordinates
+</ParamField>
+
+<ParamField path="scale" type="tuple[float, float] | float" default="1.0">
+  Scale factor(s) for local coordinates. Can be a single float or tuple of (x_scale, y_scale)
+</ParamField>
+
+<ResponseField name="return" type="FreeformBuilder">
+  Builder object for creating freeform shapes
+</ResponseField>
+
+```python
+from pptx.util import Inches
+
+builder = shapes.build_freeform(scale=Inches(1)/100)
+builder.move_to(50, 50)
+builder.line_to(100, 50)
+builder.line_to(100, 100)
+freeform = builder.convert_to_shape()
+```
+
+##### index()
+
+Return the index of the specified shape in this sequence.
+
+<ParamField path="shape" type="BaseShape" required>
+  The shape to locate
+</ParamField>
+
+<ResponseField name="return" type="int">
+  Zero-based index of the shape
+</ResponseField>
+
+Raises `ValueError` if the shape is not in the collection.
+
+#### Properties
+
+##### placeholders
+
+`SlidePlaceholders` - Sequence of placeholder shapes in this slide.
+
+##### title
+
+`Shape | None` - The title placeholder shape on the slide. `None` if the slide has no title placeholder.
+
+```python
+title_shape = slide.shapes.title
+if title_shape:
+    title_shape.text = "Slide Title"
+```
+
+##### turbo_add_enabled
+
+`bool` - `True` if turbo-add mode is enabled. Read/write.
+
+**EXPERIMENTAL**: This feature can radically improve performance when adding large numbers (hundreds) of shapes to a slide by caching the last shape ID used. Only use a single Slide object when this is enabled to avoid ID collisions.
+
+---
+
+## Shape objects
+
+### BaseShape
+
+Base class for all shape objects. Properties and methods common to all shapes.
+
+#### Properties
+
+##### click_action
+
+`ActionSetting` - Instance providing access to click behaviors like hyperlinks.
+
+```python
+shape.click_action.hyperlink.address = 'https://example.com'
+```
+
+##### element
+
+`ShapeElement` - The lxml element for this shape (e.g. CT_Shape instance).
+
+##### has_chart
+
+`bool` - `True` if this shape is a graphic frame containing a chart.
+
+##### has_table
+
+`bool` - `True` if this shape is a graphic frame containing a table.
+
+##### has_text_frame
+
+`bool` - `True` if this shape can contain text.
+
+##### height
+
+`Length` - Distance between top and bottom extents of shape in EMU. Read/write.
+
+```python
+from pptx.util import Inches
+
+shape.height = Inches(3)
+```
+
+##### is_placeholder
+
+`bool` - `True` if this shape is a placeholder.
+
+##### left
+
+`Length` - Distance of left edge of this shape from left edge of slide in EMU. Read/write.
+
+##### name
+
+`str` - Name of this shape, e.g. 'Picture 7'. Read/write.
+
+##### placeholder_format
+
+`_PlaceholderFormat` - Provides access to placeholder-specific properties.
+
+Raises `ValueError` if the shape is not a placeholder.
+
+```python
+if shape.is_placeholder:
+    print(shape.placeholder_format.type)
+```
+
+##### rotation
+
+`float` - Degrees of clockwise rotation. Read/write.
+
+Negative values can be assigned to indicate counter-clockwise rotation (e.g. -45.0 becomes 315.0).
+
+##### shadow
+
+`ShadowFormat` - Object providing access to shadow properties for this shape.
+
+##### shape_id
+
+`int` - Positive integer uniquely identifying this shape among all shapes on the slide. Read-only.
+
+##### shape_type
+
+`MSO_SHAPE_TYPE` - Member of MSO_SHAPE_TYPE classifying this shape by type.
+
+##### top
+
+`Length` - Distance from top edge of slide to top edge of this shape in EMU. Read/write.
+
+##### width
+
+`Length` - Distance between left and right extents of this shape in EMU. Read/write.
+
+---
+
+### Shape (AutoShape)
+
+Autoshape objects, including text boxes and placeholders. Corresponds to the `p:sp` element.
+
+#### Properties
+
+##### adjustments
+
+`AdjustmentCollection` - Collection of adjustment values for this shape. Read-only.
+
+Adjustment values correspond to the position of adjustment handles (yellow diamonds) that appear on certain autoshapes.
+
+```python
+if len(shape.adjustments) > 0:
+    shape.adjustments[0] = 0.15  # Adjust first handle
+```
+
+##### auto_shape_type
+
+`MSO_SHAPE` - Enumeration value identifying the type of this autoshape.
+
+Like `MSO_SHAPE.ROUNDED_RECTANGLE`. Raises `ValueError` if this shape is not an autoshape.
+
+##### fill
+
+`FillFormat` - Instance for this shape providing access to fill properties.
+
+```python
+from pptx.util import RGBColor
+
+shape.fill.solid()
+shape.fill.fore_color.rgb = RGBColor(255, 0, 0)
+```
+
+##### line
+
+`LineFormat` - Instance providing access to line properties like color and width.
+
+```python
+from pptx.util import Pt, RGBColor
+
+shape.line.color.rgb = RGBColor(0, 0, 255)
+shape.line.width = Pt(2.5)
+```
+
+##### text
+
+`str` - Text in shape as a single string. Read/write.
+
+The returned string contains newline characters (`\n`) separating paragraphs and vertical-tab characters (`\v`) for line breaks.
+
+```python
+shape.text = "First paragraph\nSecond paragraph"
+```
+
+##### text_frame
+
+`TextFrame` - Instance for this shape containing the text and providing access to text formatting.
+
+```python
+text_frame = shape.text_frame
+text_frame.text = "Formatted text"
+p = text_frame.paragraphs[0]
+p.font.bold = True
+```
+
+---
+
+### Picture
+
+Picture shape that places an image on a slide. Based on the `p:pic` element.
+
+#### Properties
+
+##### auto_shape_type
+
+`MSO_SHAPE | None` - Member of MSO_SHAPE indicating the masking shape. Read/write.
+
+A picture can be masked by autoshapes like ellipse or triangle. Default is `MSO_SHAPE.RECTANGLE` (no cropping). Returns `None` for custom geometry.
+
+```python
+from pptx.enum.shapes import MSO_SHAPE
+
+picture.auto_shape_type = MSO_SHAPE.OVAL  # Circular crop
+```
+
+##### crop_bottom
+
+`float` - Relative portion cropped from shape bottom. Read/write.
+
+1.0 represents 100%. For example, 0.25 represents 25%. Negative values and values greater than 1.0 are valid.
+
+##### crop_left
+
+`float` - Relative portion cropped from left of shape. Read/write.
+
+##### crop_right
+
+`float` - Relative portion cropped from right of shape. Read/write.
+
+##### crop_top
+
+`float` - Relative portion cropped from shape top. Read/write.
+
+```python
+picture.crop_left = 0.1   # Crop 10% from left
+picture.crop_right = 0.15 # Crop 15% from right
+```
+
+##### image
+
+`Image` - The Image object for this picture providing access to image properties and bytes.
+
+```python
+image = picture.image
+print(f"Image size: {image.size}")
+with open('extracted.jpg', 'wb') as f:
+    f.write(image.blob)
+```
+
+##### line
+
+`LineFormat` - Provides access to properties of the picture outline.
+
+##### shape_type
+
+`MSO_SHAPE_TYPE` - Unconditionally `MSO_SHAPE_TYPE.PICTURE`.
+
+---
+
+### GraphicFrame
+
+Container shape for table, chart, smart art, and media objects. Corresponds to `p:graphicFrame` element.
+
+#### Properties
+
+##### chart
+
+`Chart` - The Chart object contained in this graphic frame.
+
+Raises `ValueError` if this graphic frame does not contain a chart.
+
+```python
+if graphic_frame.has_chart:
+    chart = graphic_frame.chart
+    print(chart.chart_type)
+```
+
+##### has_chart
+
+`bool` - `True` if this graphic frame contains a chart.
+
+##### has_table
+
+`bool` - `True` if this graphic frame contains a table.
+
+##### ole_format
+
+`_OleFormat` - Provides attributes on embedded OLE object.
+
+Raises `ValueError` if this is not an OLE-object shape.
+
+##### shape_type
+
+`MSO_SHAPE_TYPE` - Member identifying the type of this shape.
+
+Possible values: `MSO_SHAPE_TYPE.CHART`, `MSO_SHAPE_TYPE.TABLE`, `MSO_SHAPE_TYPE.EMBEDDED_OLE_OBJECT`, `MSO_SHAPE_TYPE.LINKED_OLE_OBJECT`, or `None` (e.g. for SmartArt).
+
+##### table
+
+`Table` - The Table object contained in this graphic frame.
+
+Raises `ValueError` if this graphic frame does not contain a table.
+
+```python
+if graphic_frame.has_table:
+    table = graphic_frame.table
+    for row in table.rows:
+        for cell in row.cells:
+            print(cell.text)
+```
+
+---
+
+### Connector
+
+Connector (line) shape. A connector is a linear shape having endpoints that can be connected to other objects.
+
+#### Properties
+
+##### begin_x
+
+`Length` - X-position of the begin point of this connector in EMU. Read/write.
+
+##### begin_y
+
+`Length` - Y-position of the begin point of this connector in EMU. Read/write.
+
+##### end_x
+
+`Length` - X-position of the end point of this connector in EMU. Read/write.
+
+##### end_y
+
+`Length` - Y-position of the end point of this connector in EMU. Read/write.
+
+```python
+from pptx.util import Inches
+
+connector.begin_x = Inches(1)
+connector.begin_y = Inches(2)
+connector.end_x = Inches(5)
+connector.end_y = Inches(3)
+```
+
+##### line
+
+`LineFormat` - Instance providing access to line properties.
+
+##### shape_type
+
+`MSO_SHAPE_TYPE` - Unconditionally `MSO_SHAPE_TYPE.LINE`.
+
+#### Methods
+
+##### begin_connect()
+
+**EXPERIMENTAL** - Connect the beginning of this connector to a shape.
+
+<ParamField path="shape" type="BaseShape" required>
+  Shape to connect to
+</ParamField>
+
+<ParamField path="cxn_pt_idx" type="int" required>
+  Index of connection point on the shape (0-based)
+</ParamField>
+
+Currently only works properly with rectangular shapes.
+
+##### end_connect()
+
+**EXPERIMENTAL** - Connect the ending of this connector to a shape.
+
+<ParamField path="shape" type="BaseShape" required>
+  Shape to connect to
+</ParamField>
+
+<ParamField path="cxn_pt_idx" type="int" required>
+  Index of connection point on the shape (0-based)
+</ParamField>
+
+---
+
+### GroupShape
+
+A shape that acts as a container for other shapes.
+
+#### Properties
+
+##### has_text_frame
+
+`bool` - Unconditionally `False`. A group shape cannot contain text.
+
+##### shape_type
+
+`MSO_SHAPE_TYPE` - Unconditionally `MSO_SHAPE_TYPE.GROUP`.
+
+##### shapes
+
+`GroupShapes` - Collection of shapes contained by this group.
+
+Provides access to member shapes and methods for adding new ones.
+
+```python
+group = shapes.add_group_shape()
+group_shapes = group.shapes
+group_shapes.add_shape(
+    MSO_SHAPE.RECTANGLE,
+    Inches(0), Inches(0),
+    Inches(1), Inches(1)
+)
+```
+
+#### Notes
+
+- A group shape cannot have a click action or text frame
+- Attempting to access `click_action` raises `TypeError`
+- The `shadow` property raises `NotImplementedError` (not yet supported)
+
+---
+
+### Movie
+
+A movie shape that places a video on a slide. Like Picture, a movie is based on the `p:pic` element.
+
+#### Properties
+
+##### media_format
+
+`_MediaFormat` - Provides access to formatting properties for the movie.
+
+##### media_type
+
+`PP_MEDIA_TYPE` - Unconditionally `PP_MEDIA_TYPE.MOVIE`.
+
+##### poster_frame
+
+`Image | None` - Image object containing poster frame for this movie.
+
+Returns `None` if this movie has no poster frame (uncommon).
+
+##### shape_type
+
+`MSO_SHAPE_TYPE` - Unconditionally `MSO_SHAPE_TYPE.MEDIA`.

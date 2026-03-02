@@ -1,80 +1,465 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Create your first PowerPoint presentation with python-pptx
 ---
 
-## Get started in three steps
+# Quickstart
 
-Get your documentation site running locally and make your first customization.
+Get up and running with python-pptx by creating your first presentation. This guide will walk you through the basics of creating slides, adding content, and saving your presentation.
 
-### Step 1: Set up your local environment
+## Your first presentation
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
+Let's create a simple "Hello, World!" presentation to get familiar with the basics.
+
+### Hello, World! example
+
+<Steps>
+  <Step title="Import the Presentation class">
+    Start by importing the main `Presentation` class from the `pptx` module:
     
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
+    ```python
+    from pptx import Presentation
+    ```
+  </Step>
+
+  <Step title="Create a new presentation">
+    Create a new, empty presentation object:
     
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
+    ```python
+    prs = Presentation()
+    ```
     
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    This creates a presentation based on the default template, which includes several slide layouts.
+  </Step>
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+  <Step title="Choose a slide layout">
+    Select a slide layout to use. The default template includes 11 layouts. Layout `[0]` is the title slide:
+    
+    ```python
+    title_slide_layout = prs.slide_layouts[0]
+    ```
+  </Step>
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+  <Step title="Add a slide">
+    Add a new slide using the selected layout:
+    
+    ```python
+    slide = prs.slides.add_slide(title_slide_layout)
+    ```
+  </Step>
 
-### Step 3: Go live
+  <Step title="Add content to the slide">
+    Access the title and subtitle placeholders and set their text:
+    
+    ```python
+    title = slide.shapes.title
+    subtitle = slide.placeholders[1]
+    
+    title.text = "Hello, World!"
+    subtitle.text = "python-pptx was here!"
+    ```
+  </Step>
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+  <Step title="Save the presentation">
+    Save your presentation to a file:
+    
+    ```python
+    prs.save('hello_world.pptx')
+    ```
+  </Step>
+</Steps>
+
+### Complete code
+
+Here's the complete "Hello, World!" example:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+title_slide_layout = prs.slide_layouts[0]
+slide = prs.slides.add_slide(title_slide_layout)
+title = slide.shapes.title
+subtitle = slide.placeholders[1]
+
+title.text = "Hello, World!"
+subtitle.text = "python-pptx was here!"
+
+prs.save('hello_world.pptx')
+```
+
+<Tip>
+  Run this code and open the resulting `hello_world.pptx` file in PowerPoint to see your first programmatically created presentation!
+</Tip>
+
+## Understanding the basics
+
+### The Presentation object
+
+The `Presentation` class is the top-level object representing your PowerPoint file.
+
+```python
+from pptx import Presentation
+
+# Create a new presentation (uses default template)
+prs = Presentation()
+
+# Open an existing presentation
+prs = Presentation('existing.pptx')
+```
+
+### Slide layouts
+
+Slide layouts define the arrangement of placeholders on a slide. The default template provides 11 layouts:
+
+- `slide_layouts[0]` - Title Slide
+- `slide_layouts[1]` - Title and Content
+- `slide_layouts[2]` - Section Header
+- `slide_layouts[3]` - Two Content
+- `slide_layouts[4]` - Comparison
+- `slide_layouts[5]` - Title Only
+- `slide_layouts[6]` - Blank
+- `slide_layouts[7]` - Content with Caption
+- `slide_layouts[8]` - Picture with Caption
+- And more...
+
+```python
+# Access available layouts
+for i, layout in enumerate(prs.slide_layouts):
+    print(f"Layout {i}: {layout.name}")
+```
+
+### Adding slides
+
+Always add slides using a layout:
+
+```python
+# Add a title slide
+title_slide = prs.slides.add_slide(prs.slide_layouts[0])
+
+# Add a content slide
+content_slide = prs.slides.add_slide(prs.slide_layouts[1])
+
+# Add a blank slide
+blank_slide = prs.slides.add_slide(prs.slide_layouts[6])
+```
+
+## Adding content to slides
+
+### Working with text
+
+#### Using placeholders
+
+Placeholders are predefined text areas in a slide layout:
+
+```python
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+
+# Access the title placeholder
+title_shape = slide.shapes.title
+title_shape.text = "Slide Title"
+
+# Access other placeholders by index
+body_shape = slide.placeholders[1]
+body_shape.text = "This is body text"
+```
+
+#### Adding bullet points
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+bullet_slide_layout = prs.slide_layouts[1]
+slide = prs.slides.add_slide(bullet_slide_layout)
+
+title_shape = slide.shapes.title
+body_shape = slide.placeholders[1]
+
+title_shape.text = "Adding Bullet Points"
+
+# Get the text frame
+tf = body_shape.text_frame
+tf.text = "First bullet point"
+
+# Add more paragraphs for additional bullets
+p = tf.add_paragraph()
+p.text = "Second bullet point"
+p.level = 0  # Top-level bullet
+
+p = tf.add_paragraph()
+p.text = "Indented bullet point"
+p.level = 1  # Second-level bullet
+
+prs.save('bullets.pptx')
+```
+
+### Adding text boxes
+
+Create text boxes with custom positioning and size:
+
+```python
+from pptx import Presentation
+from pptx.util import Inches, Pt
+
+prs = Presentation()
+blank_slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+# Define position and size
+left = top = Inches(1)
+width = height = Inches(3)
+
+# Add text box
+txBox = blank_slide.shapes.add_textbox(left, top, width, height)
+tf = txBox.text_frame
+tf.text = "This is text inside a textbox"
+
+# Add formatted paragraph
+p = tf.add_paragraph()
+p.text = "This is bold text"
+p.font.bold = True
+
+p = tf.add_paragraph()
+p.text = "This is large text"
+p.font.size = Pt(40)
+
+prs.save('textbox.pptx')
+```
+
+### Adding images
+
+Insert images into your slides:
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+
+prs = Presentation()
+blank_slide = prs.slides.add_slide(prs.slide_layouts[6])
+
+# Add image at specific position
+img_path = 'path/to/image.png'
+left = Inches(1)
+top = Inches(1)
+pic = blank_slide.shapes.add_picture(img_path, left, top)
+
+# Add image with specific height (width auto-calculated)
+left = Inches(5)
+height = Inches(4)
+pic = blank_slide.shapes.add_picture(img_path, left, top, height=height)
+
+prs.save('with_images.pptx')
+```
+
+### Adding shapes
+
+Create various shapes programmatically:
+
+```python
+from pptx import Presentation
+from pptx.enum.shapes import MSO_SHAPE
+from pptx.util import Inches
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[5])
+shapes = slide.shapes
+
+shapes.title.text = "Adding Shapes"
+
+# Add a rectangle
+left = Inches(1)
+top = Inches(2)
+width = Inches(2)
+height = Inches(1)
+
+shape = shapes.add_shape(
+    MSO_SHAPE.RECTANGLE,
+    left, top, width, height
+)
+shape.text = "Rectangle"
+
+# Add other shapes
+shape = shapes.add_shape(
+    MSO_SHAPE.ROUNDED_RECTANGLE,
+    Inches(4), Inches(2), Inches(2), Inches(1)
+)
+shape.text = "Rounded"
+
+prs.save('shapes.pptx')
+```
+
+### Adding tables
+
+Create tables with rows and columns:
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[5])
+shapes = slide.shapes
+
+shapes.title.text = "Adding a Table"
+
+# Define table dimensions and position
+rows = cols = 3
+left = top = Inches(2)
+width = Inches(6)
+height = Inches(2)
+
+# Add table
+table = shapes.add_table(rows, cols, left, top, width, height).table
+
+# Set column widths
+table.columns[0].width = Inches(2)
+table.columns[1].width = Inches(2)
+table.columns[2].width = Inches(2)
+
+# Populate cells
+table.cell(0, 0).text = "Header 1"
+table.cell(0, 1).text = "Header 2"
+table.cell(0, 2).text = "Header 3"
+
+table.cell(1, 0).text = "Row 1, Col 1"
+table.cell(1, 1).text = "Row 1, Col 2"
+table.cell(1, 2).text = "Row 1, Col 3"
+
+prs.save('table.pptx')
+```
+
+## Working with measurements
+
+python-pptx uses English Metric Units (EMU) internally, but provides convenient classes for common units:
+
+```python
+from pptx.util import Inches, Cm, Mm, Pt
+
+# Different ways to specify measurements
+width = Inches(2)      # 2 inches
+height = Cm(5)         # 5 centimeters
+left = Mm(25)          # 25 millimeters
+font_size = Pt(18)     # 18 points
+
+# Convert between units
+width_in_cm = width.cm
+width_in_mm = width.mm
+width_in_pt = width.pt
+```
+
+<Note>
+  All measurement classes (Inches, Cm, Mm, Pt) are interchangeable. Use whichever unit is most convenient for your use case.
+</Note>
+
+## Reading existing presentations
+
+You can also open and modify existing presentations:
+
+```python
+from pptx import Presentation
+
+# Open an existing presentation
+prs = Presentation('existing.pptx')
+
+# Access slides
+for slide in prs.slides:
+    print(f"Slide has {len(slide.shapes)} shapes")
+
+# Extract text from all slides
+for slide in prs.slides:
+    for shape in slide.shapes:
+        if shape.has_text_frame:
+            for paragraph in shape.text_frame.paragraphs:
+                for run in paragraph.runs:
+                    print(run.text)
+
+# Add a new slide to existing presentation
+new_slide = prs.slides.add_slide(prs.slide_layouts[1])
+new_slide.shapes.title.text = "New Slide Added"
+
+# Save the modified presentation
+prs.save('modified.pptx')
+```
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
+Now that you've created your first presentation, explore more advanced features:
 
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="API Reference" icon="code" href="/api/presentation">
+    Explore the complete API documentation
+  </Card>
+  <Card title="Working with charts" icon="chart-line" href="/guides/charts">
+    Learn how to add charts and graphs to your presentations
+  </Card>
+  <Card title="Text formatting" icon="font" href="/guides/text">
+    Master fonts, colors, and text styling
+  </Card>
+  <Card title="Core Concepts" icon="book-open" href="/concepts/presentations">
+    Learn about presentations, slides, and shapes
+  </Card>
 </CardGroup>
 
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>
+## Common patterns
+
+### Generate reports from data
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+
+# Sample data
+data = [
+    {"quarter": "Q1", "revenue": 1250000},
+    {"quarter": "Q2", "revenue": 1350000},
+    {"quarter": "Q3", "revenue": 1450000},
+    {"quarter": "Q4", "revenue": 1550000},
+]
+
+prs = Presentation()
+
+for item in data:
+    slide = prs.slides.add_slide(prs.slide_layouts[1])
+    slide.shapes.title.text = f"{item['quarter']} Report"
+    
+    body = slide.placeholders[1]
+    tf = body.text_frame
+    tf.text = f"Revenue: ${item['revenue']:,.2f}"
+
+prs.save('quarterly_report.pptx')
+```
+
+### Create a photo album
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+import os
+
+prs = Presentation()
+
+# Add title slide
+title_slide = prs.slides.add_slide(prs.slide_layouts[0])
+title_slide.shapes.title.text = "My Photo Album"
+
+# Add photos from a directory
+image_dir = 'photos'
+for img_file in os.listdir(image_dir):
+    if img_file.endswith(('.jpg', '.png')):
+        slide = prs.slides.add_slide(prs.slide_layouts[6])  # Blank layout
+        img_path = os.path.join(image_dir, img_file)
+        
+        # Center the image
+        slide.shapes.add_picture(
+            img_path,
+            Inches(0.5),
+            Inches(0.5),
+            height=Inches(6.5)
+        )
+
+prs.save('photo_album.pptx')
+```
+
+<Tip>
+  Check out the [Working with Content](/guides/text) guides for more real-world use cases and code samples.
+</Tip>

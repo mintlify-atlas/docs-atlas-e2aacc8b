@@ -1,0 +1,456 @@
+---
+title: 'Enumerations'
+description: 'API reference for enumeration types in python-pptx'
+---
+
+# Enumeration Types
+
+Enumeration classes used throughout python-pptx for specifying various properties and settings.
+
+## Action Enumerations
+
+### PP_ACTION_TYPE
+
+Specifies the type of a mouse action (click or hover).
+
+**Alias:** `PP_ACTION`
+
+**Import:**
+```python
+from pptx.enum.action import PP_ACTION
+```
+
+**Values:**
+
+<ResponseField name="PP_ACTION.NONE" type="0">
+  No action is performed.
+</ResponseField>
+
+<ResponseField name="PP_ACTION.NEXT_SLIDE" type="1">
+  Moves to the next slide.
+</ResponseField>
+
+<ResponseField name="PP_ACTION.PREVIOUS_SLIDE" type="2">
+  Moves to the previous slide.
+</ResponseField>
+
+<ResponseField name="PP_ACTION.FIRST_SLIDE" type="3">
+  Returns to the first slide.
+</ResponseField>
+
+<ResponseField name="PP_ACTION.LAST_SLIDE" type="4">
+  Moves to the last slide.
+</ResponseField>
+
+<ResponseField name="PP_ACTION.LAST_SLIDE_VIEWED" type="5">
+  Moves to the last slide viewed.
+</ResponseField>
+
+<ResponseField name="PP_ACTION.END_SHOW" type="6">
+  Slide show ends.
+</ResponseField>
+
+<ResponseField name="PP_ACTION.HYPERLINK" type="7">
+  Hyperlink to a URL.
+</ResponseField>
+
+<ResponseField name="PP_ACTION.RUN_MACRO" type="8">
+  Runs a macro.
+</ResponseField>
+
+<ResponseField name="PP_ACTION.RUN_PROGRAM" type="9">
+  Runs a program.
+</ResponseField>
+
+<ResponseField name="PP_ACTION.NAMED_SLIDE_SHOW" type="10">
+  Runs the slideshow.
+</ResponseField>
+
+<ResponseField name="PP_ACTION.OLE_VERB" type="11">
+  OLE Verb action.
+</ResponseField>
+
+<ResponseField name="PP_ACTION.PLAY" type="12">
+  Begins the slideshow.
+</ResponseField>
+
+<ResponseField name="PP_ACTION.NAMED_SLIDE" type="101">
+  Moves to slide specified by slide number.
+</ResponseField>
+
+<ResponseField name="PP_ACTION.OPEN_FILE" type="102">
+  Opens the specified file.
+</ResponseField>
+
+**Example:**
+```python
+from pptx.enum.action import PP_ACTION
+
+assert shape.click_action.action == PP_ACTION.HYPERLINK
+```
+
+## Shape Enumerations
+
+### MSO_SHAPE_TYPE
+
+Specifies the type of a shape.
+
+**Alias:** `MSO`
+
+**Import:**
+```python
+from pptx.enum.shapes import MSO_SHAPE_TYPE
+```
+
+**Common Values:**
+
+<ResponseField name="MSO_SHAPE_TYPE.AUTO_SHAPE" type="1">
+  AutoShape
+</ResponseField>
+
+<ResponseField name="MSO_SHAPE_TYPE.CHART" type="3">
+  Chart (pie chart, bar chart, etc.)
+</ResponseField>
+
+<ResponseField name="MSO_SHAPE_TYPE.GROUP" type="6">
+  Group shape
+</ResponseField>
+
+<ResponseField name="MSO_SHAPE_TYPE.LINE" type="9">
+  Line
+</ResponseField>
+
+<ResponseField name="MSO_SHAPE_TYPE.PICTURE" type="13">
+  Picture
+</ResponseField>
+
+<ResponseField name="MSO_SHAPE_TYPE.PLACEHOLDER" type="14">
+  Placeholder
+</ResponseField>
+
+<ResponseField name="MSO_SHAPE_TYPE.TABLE" type="19">
+  Table
+</ResponseField>
+
+<ResponseField name="MSO_SHAPE_TYPE.TEXT_BOX" type="17">
+  Text box
+</ResponseField>
+
+### PP_PLACEHOLDER_TYPE
+
+Specifies one of the 18 distinct types of placeholder.
+
+**Alias:** `PP_PLACEHOLDER`
+
+**Import:**
+```python
+from pptx.enum.shapes import PP_PLACEHOLDER
+```
+
+**Values:**
+
+<ResponseField name="PP_PLACEHOLDER.TITLE" type="1">
+  Title placeholder
+</ResponseField>
+
+<ResponseField name="PP_PLACEHOLDER.BODY" type="2">
+  Body text placeholder
+</ResponseField>
+
+<ResponseField name="PP_PLACEHOLDER.CENTER_TITLE" type="3">
+  Center title placeholder
+</ResponseField>
+
+<ResponseField name="PP_PLACEHOLDER.SUBTITLE" type="4">
+  Subtitle placeholder
+</ResponseField>
+
+<ResponseField name="PP_PLACEHOLDER.CHART" type="8">
+  Chart placeholder
+</ResponseField>
+
+<ResponseField name="PP_PLACEHOLDER.TABLE" type="12">
+  Table placeholder
+</ResponseField>
+
+<ResponseField name="PP_PLACEHOLDER.PICTURE" type="18">
+  Picture placeholder
+</ResponseField>
+
+<ResponseField name="PP_PLACEHOLDER.DATE" type="16">
+  Date placeholder
+</ResponseField>
+
+<ResponseField name="PP_PLACEHOLDER.FOOTER" type="15">
+  Footer placeholder
+</ResponseField>
+
+<ResponseField name="PP_PLACEHOLDER.SLIDE_NUMBER" type="13">
+  Slide number placeholder
+</ResponseField>
+
+**Example:**
+```python
+from pptx.enum.shapes import PP_PLACEHOLDER
+
+placeholder = slide.placeholders[0]
+assert placeholder.placeholder_format.type == PP_PLACEHOLDER.TITLE
+```
+
+### MSO_AUTO_SHAPE_TYPE
+
+Specifies a type of AutoShape.
+
+**Alias:** `MSO_SHAPE`
+
+**Import:**
+```python
+from pptx.enum.shapes import MSO_SHAPE
+from pptx.util import Inches
+
+slide.shapes.add_shape(
+    MSO_SHAPE.ROUNDED_RECTANGLE, Inches(1), Inches(1), Inches(2), Inches(1)
+)
+```
+
+**Common Values:**
+- `MSO_SHAPE.RECTANGLE` - Rectangle
+- `MSO_SHAPE.ROUNDED_RECTANGLE` - Rounded rectangle
+- `MSO_SHAPE.OVAL` - Oval/Ellipse
+- `MSO_SHAPE.DIAMOND` - Diamond
+- `MSO_SHAPE.RIGHT_ARROW` - Block arrow pointing right
+- `MSO_SHAPE.DOWN_ARROW` - Block arrow pointing down
+
+## Text Enumerations
+
+### MSO_AUTO_SIZE
+
+Determines the type of automatic sizing for text frames.
+
+**Import:**
+```python
+from pptx.enum.text import MSO_AUTO_SIZE
+```
+
+**Values:**
+
+<ResponseField name="MSO_AUTO_SIZE.NONE" type="0">
+  No automatic sizing. Text can extend beyond shape bounds.
+</ResponseField>
+
+<ResponseField name="MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT" type="1">
+  Shape height (and possibly width) adjusts to fit text.
+</ResponseField>
+
+<ResponseField name="MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE" type="2">
+  Font size is reduced as necessary to fit text within shape.
+</ResponseField>
+
+**Example:**
+```python
+shape.text_frame.auto_size = MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE
+```
+
+### PP_PARAGRAPH_ALIGNMENT
+
+Specifies horizontal alignment for paragraphs.
+
+**Alias:** `PP_ALIGN`
+
+**Import:**
+```python
+from pptx.enum.text import PP_ALIGN
+```
+
+**Values:**
+
+<ResponseField name="PP_ALIGN.LEFT" type="1">
+  Left aligned
+</ResponseField>
+
+<ResponseField name="PP_ALIGN.CENTER" type="2">
+  Center aligned
+</ResponseField>
+
+<ResponseField name="PP_ALIGN.RIGHT" type="3">
+  Right aligned
+</ResponseField>
+
+<ResponseField name="PP_ALIGN.JUSTIFY" type="4">
+  Justified (both left and right margins)
+</ResponseField>
+
+**Example:**
+```python
+shape.text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
+```
+
+### MSO_VERTICAL_ANCHOR
+
+Specifies vertical alignment of text in a text frame.
+
+**Alias:** `MSO_ANCHOR`
+
+**Values:**
+
+<ResponseField name="MSO_ANCHOR.TOP" type="1">
+  Aligns text to top of text frame
+</ResponseField>
+
+<ResponseField name="MSO_ANCHOR.MIDDLE" type="3">
+  Centers text vertically
+</ResponseField>
+
+<ResponseField name="MSO_ANCHOR.BOTTOM" type="4">
+  Aligns text to bottom of text frame
+</ResponseField>
+
+## Drawing/Fill Enumerations
+
+### MSO_FILL_TYPE
+
+Specifies the fill type for a shape.
+
+**Alias:** `MSO_FILL`
+
+**Import:**
+```python
+from pptx.enum.dml import MSO_FILL
+```
+
+**Values:**
+
+<ResponseField name="MSO_FILL.SOLID" type="1">
+  Shape is filled with a solid color
+</ResponseField>
+
+<ResponseField name="MSO_FILL.PATTERNED" type="2">
+  Shape is filled with a pattern
+</ResponseField>
+
+<ResponseField name="MSO_FILL.GRADIENT" type="3">
+  Shape is filled with a gradient
+</ResponseField>
+
+<ResponseField name="MSO_FILL.TEXTURED" type="4">
+  Shape is filled with a texture
+</ResponseField>
+
+<ResponseField name="MSO_FILL.BACKGROUND" type="5">
+  Shape is transparent, showing whatever is behind it
+</ResponseField>
+
+<ResponseField name="MSO_FILL.PICTURE" type="6">
+  Shape is filled with a bitmap image
+</ResponseField>
+
+**Example:**
+```python
+assert shape.fill.type == MSO_FILL.SOLID
+```
+
+### MSO_THEME_COLOR_INDEX
+
+Specifies an Office theme color.
+
+**Alias:** `MSO_THEME_COLOR`
+
+**Import:**
+```python
+from pptx.enum.dml import MSO_THEME_COLOR
+```
+
+**Values:**
+
+<ResponseField name="MSO_THEME_COLOR.ACCENT_1" type="5">
+  Accent 1 theme color
+</ResponseField>
+
+<ResponseField name="MSO_THEME_COLOR.ACCENT_2" type="6">
+  Accent 2 theme color
+</ResponseField>
+
+<ResponseField name="MSO_THEME_COLOR.DARK_1" type="1">
+  Dark 1 theme color
+</ResponseField>
+
+<ResponseField name="MSO_THEME_COLOR.LIGHT_1" type="2">
+  Light 1 theme color
+</ResponseField>
+
+**Example:**
+```python
+shape.fill.solid()
+shape.fill.fore_color.theme_color = MSO_THEME_COLOR.ACCENT_1
+```
+
+## Chart Enumerations
+
+### XL_CHART_TYPE
+
+Specifies the type of a chart.
+
+**Import:**
+```python
+from pptx.enum.chart import XL_CHART_TYPE
+```
+
+**Common Values:**
+
+<ResponseField name="XL_CHART_TYPE.BAR_CLUSTERED" type="57">
+  Clustered bar chart
+</ResponseField>
+
+<ResponseField name="XL_CHART_TYPE.COLUMN_CLUSTERED" type="51">
+  Clustered column chart
+</ResponseField>
+
+<ResponseField name="XL_CHART_TYPE.LINE" type="4">
+  Line chart
+</ResponseField>
+
+<ResponseField name="XL_CHART_TYPE.PIE" type="5">
+  Pie chart
+</ResponseField>
+
+<ResponseField name="XL_CHART_TYPE.AREA" type="1">
+  Area chart
+</ResponseField>
+
+**Example:**
+```python
+assert chart.chart_type == XL_CHART_TYPE.BAR_STACKED
+```
+
+### XL_LEGEND_POSITION
+
+Specifies the position of the legend on a chart.
+
+**Import:**
+```python
+from pptx.enum.chart import XL_LEGEND_POSITION
+```
+
+**Values:**
+
+<ResponseField name="XL_LEGEND_POSITION.BOTTOM" type="-4107">
+  Below the chart
+</ResponseField>
+
+<ResponseField name="XL_LEGEND_POSITION.LEFT" type="-4131">
+  Left of the chart
+</ResponseField>
+
+<ResponseField name="XL_LEGEND_POSITION.RIGHT" type="-4152">
+  Right of the chart
+</ResponseField>
+
+<ResponseField name="XL_LEGEND_POSITION.TOP" type="-4160">
+  Above the chart
+</ResponseField>
+
+**Example:**
+```python
+chart.has_legend = True
+chart.legend.position = XL_LEGEND_POSITION.BOTTOM
+```

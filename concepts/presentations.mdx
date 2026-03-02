@@ -1,0 +1,275 @@
+---
+title: "Presentations"
+description: "Understanding the Presentation object and how to work with PowerPoint presentations"
+icon: "file-powerpoint"
+---
+
+The `Presentation` object is the top-level container for a PowerPoint presentation. It provides access to slides, slide masters, layouts, and presentation-level properties.
+
+## Creating and opening presentations
+
+### Opening a new presentation
+
+Create a new presentation from the built-in default template:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+prs.save('new-presentation.pptx')
+```
+
+The default template provides a basic 4:3 aspect ratio presentation with standard slide layouts but no slides.
+
+### Opening an existing presentation
+
+Open and modify an existing PowerPoint file:
+
+```python
+prs = Presentation('existing-presentation.pptx')
+# Make changes...
+prs.save('modified-presentation.pptx')
+```
+
+<Warning>
+If you use the same filename for opening and saving, the original file will be overwritten without warning.
+</Warning>
+
+### Opening from file-like objects
+
+You can also work with file-like objects for scenarios like network transfers or database storage:
+
+```python
+from io import BytesIO
+
+# Open from file-like object
+with open('presentation.pptx', 'rb') as f:
+    prs = Presentation(f)
+
+# Save to file-like object
+output = BytesIO()
+prs.save(output)
+output.seek(0)
+```
+
+## Core properties
+
+Access Dublin Core document properties like title, author, and subject:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+core_props = prs.core_properties
+
+core_props.title = 'Annual Report 2024'
+core_props.author = 'Jane Smith'
+core_props.subject = 'Financial Overview'
+core_props.comments = 'Q4 results and projections'
+
+prs.save('report.pptx')
+```
+
+The `core_properties` attribute returns a `CoreProperties` object with read/write access to metadata.
+
+## Slide dimensions
+
+Control the width and height of all slides in the presentation:
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+
+prs = Presentation()
+
+# Read current dimensions
+width = prs.slide_width
+height = prs.slide_height
+
+# Set to widescreen (16:9)
+prs.slide_width = Inches(10)
+prs.slide_height = Inches(7.5)
+
+# Set to standard (4:3)
+prs.slide_width = Inches(10)
+prs.slide_height = Inches(7.5)
+
+prs.save('custom-size.pptx')
+```
+
+Dimensions are specified in English Metric Units (EMU). Use the `Inches`, `Cm`, or `Pt` classes from `pptx.util` for convenience.
+
+<Note>
+Both `slide_width` and `slide_height` return `None` if no dimensions are defined. They can be set using `Length` values.
+</Note>
+
+## Slide masters and layouts
+
+### Accessing slide masters
+
+Slide masters define the overall theme and formatting for a presentation:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+
+# Access all slide masters
+slide_masters = prs.slide_masters
+print(f"Number of masters: {len(slide_masters)}")
+
+# Most presentations have a single slide master
+master = prs.slide_master
+print(f"Master name: {master.name}")
+```
+
+The `slide_masters` property returns a `SlideMasters` collection that supports indexing, iteration, and `len()`.
+
+### Working with slide layouts
+
+Slide layouts are templates derived from the master that define placeholder arrangements:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+
+# Access layouts through the first slide master
+layouts = prs.slide_layouts
+
+# Iterate through available layouts
+for idx, layout in enumerate(layouts):
+    print(f"{idx}: {layout.name}")
+
+# Common layout indices (standard PowerPoint themes):
+title_layout = prs.slide_layouts[0]  # Title slide
+content_layout = prs.slide_layouts[1]  # Title and Content
+section_layout = prs.slide_layouts[2]  # Section Header
+blank_layout = prs.slide_layouts[6]  # Blank
+```
+
+The `slide_layouts` property is a convenience shortcut to `prs.slide_masters[0].slide_layouts`.
+
+<Tip>
+Layout indices may vary between themes. Open your template in PowerPoint's Slide Master view to verify the order.
+</Tip>
+
+## Working with slides
+
+The presentation's slides are accessed through the `slides` collection:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+
+# Add slides
+title_layout = prs.slide_layouts[0]
+slide = prs.slides.add_slide(title_layout)
+
+# Access existing slides
+first_slide = prs.slides[0]
+slide_count = len(prs.slides)
+
+# Iterate through slides
+for idx, slide in enumerate(prs.slides):
+    print(f"Slide {idx}: {slide.slide_id}")
+```
+
+See [Slides](/concepts/slides) for detailed information on working with slides.
+
+## Saving presentations
+
+Save your presentation to a file or file-like object:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+
+# Save to file path (string)
+prs.save('output.pptx')
+
+# Save to file-like object
+with open('output.pptx', 'wb') as f:
+    prs.save(f)
+```
+
+The `save()` method accepts either a file path (string) or a file-like object open for writing bytes.
+
+## Notes master
+
+Access the notes master for the presentation:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+
+# Access notes master (created if not present)
+notes_master = prs.notes_master
+
+# Work with notes master placeholders
+for placeholder in notes_master.placeholders:
+    print(f"{placeholder.placeholder_format.type}")
+```
+
+If the presentation doesn't have a notes master, one is created from a default template. The same instance is returned on each call.
+
+## Complete example
+
+Here's a complete example demonstrating presentation creation and configuration:
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+
+# Create new presentation
+prs = Presentation()
+
+# Set properties
+prs.core_properties.title = 'Q4 Business Review'
+prs.core_properties.author = 'Marketing Team'
+
+# Configure dimensions (16:9 widescreen)
+prs.slide_width = Inches(13.333)
+prs.slide_height = Inches(7.5)
+
+# Add title slide
+title_layout = prs.slide_layouts[0]
+slide = prs.slides.add_slide(title_layout)
+title = slide.shapes.title
+subtitle = slide.placeholders[1]
+
+title.text = "Q4 Business Review"
+subtitle.text = "December 2024"
+
+# Add content slides
+content_layout = prs.slide_layouts[1]
+slide = prs.slides.add_slide(content_layout)
+slide.shapes.title.text = "Key Metrics"
+
+# Save presentation
+prs.save('business-review.pptx')
+```
+
+## API reference
+
+### Presentation class
+
+**Properties:**
+- `core_properties` - CoreProperties object for document metadata
+- `notes_master` - NotesMaster instance for the presentation
+- `slide_height` - Height of slides in EMU (read/write)
+- `slide_width` - Width of slides in EMU (read/write)
+- `slide_layouts` - SlideLayouts collection from first master
+- `slide_master` - First SlideMaster object
+- `slide_masters` - SlideMasters collection
+- `slides` - Slides collection
+
+**Methods:**
+- `save(file)` - Save presentation to file path or file-like object
+
+<Note>
+The `Presentation` class is not meant to be constructed directly. Use the `pptx.Presentation()` function to create or open presentations.
+</Note>

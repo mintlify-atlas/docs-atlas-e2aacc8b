@@ -1,0 +1,170 @@
+---
+title: 'Placeholders'
+description: 'API reference for placeholder shapes in python-pptx'
+---
+
+# Placeholder Objects
+
+Placeholder shapes are a special type of shape that inherit properties from their layout or master placeholders. They provide distinct behaviors depending on whether they appear on a slide, layout, or master.
+
+## SlidePlaceholder
+
+A placeholder shape on a slide that inherits properties from its corresponding slide layout placeholder.
+
+### Properties
+
+<ParamField path="is_placeholder" type="bool">
+  Always returns `True` for placeholder shapes.
+</ParamField>
+
+<ParamField path="shape_type" type="MSO_SHAPE_TYPE">
+  Returns `MSO_SHAPE_TYPE.PLACEHOLDER`.
+</ParamField>
+
+<ParamField path="left" type="int | Length">
+  The effective left position of this placeholder. Returns the directly-applied left if it has one, otherwise inherits from the layout placeholder.
+</ParamField>
+
+<ParamField path="top" type="int | Length">
+  The effective top position of this placeholder. Returns the directly-applied top if it has one, otherwise inherits from the layout placeholder.
+</ParamField>
+
+<ParamField path="width" type="int | Length">
+  The effective width of this placeholder. Returns the directly-applied width if it has one, otherwise inherits from the layout placeholder.
+</ParamField>
+
+<ParamField path="height" type="int | Length">
+  The effective height of this placeholder. Returns the directly-applied height if it has one, otherwise inherits from the layout placeholder.
+</ParamField>
+
+## ChartPlaceholder
+
+A placeholder shape that can only accept a chart.
+
+### Methods
+
+<ParamField path="insert_chart(chart_type, chart_data)" type="PlaceholderGraphicFrame">
+  Insert a chart into this placeholder.
+  
+  **Parameters:**
+  - `chart_type` (XlChartType): One of the XL_CHART_TYPE enumeration values
+  - `chart_data` (ChartData): A ChartData object populated with categories and series values
+  
+  **Returns:** A PlaceholderGraphicFrame object containing the new chart. Access the chart via the `.chart` property.
+</ParamField>
+
+## PicturePlaceholder
+
+A placeholder shape that can only accept a picture.
+
+### Methods
+
+<ParamField path="insert_picture(image_file)" type="PlaceholderPicture">
+  Insert a picture into this placeholder.
+  
+  **Parameters:**
+  - `image_file` (str | file-like): Path to image file or a file-like object
+  
+  **Returns:** A PlaceholderPicture object. The image is cropped to fill the entire placeholder space.
+  
+  **Example:**
+  ```python
+  picture_placeholder = slide.placeholders[1]
+  placeholder_pic = picture_placeholder.insert_picture('image.png')
+  ```
+</ParamField>
+
+## TablePlaceholder
+
+A placeholder shape that can only accept a table.
+
+### Methods
+
+<ParamField path="insert_table(rows, cols)" type="PlaceholderGraphicFrame">
+  Insert a table into this placeholder.
+  
+  **Parameters:**
+  - `rows` (int): Number of rows in the table
+  - `cols` (int): Number of columns in the table
+  
+  **Returns:** A PlaceholderGraphicFrame object containing the table. Access the table via the `.table` property.
+  
+  **Example:**
+  ```python
+  table_placeholder = slide.placeholders[2]
+  graphic_frame = table_placeholder.insert_table(rows=3, cols=4)
+  table = graphic_frame.table
+  ```
+</ParamField>
+
+## LayoutPlaceholder
+
+A placeholder shape on a slide layout that inherits shape properties from the master placeholder of the same type.
+
+### Properties
+
+Inherits all properties from `_InheritsDimensions` including `left`, `top`, `width`, and `height`.
+
+## MasterPlaceholder
+
+A placeholder shape on a slide master.
+
+### Properties (Deprecated)
+
+<Warning>
+  The following properties are deprecated and will be removed in a future release. Access these via the `.placeholder_format` property instead.
+</Warning>
+
+<ParamField path="idx" type="int">
+  Integer placeholder index attribute.
+</ParamField>
+
+<ParamField path="ph_type" type="PP_PLACEHOLDER_TYPE">
+  Placeholder type, e.g. `PP_PLACEHOLDER.CENTER_TITLE`.
+</ParamField>
+
+<ParamField path="orient" type="ST_Direction">
+  Placeholder orientation, e.g. `ST_Direction.HORZ`.
+</ParamField>
+
+<ParamField path="sz" type="ST_PlaceholderSize">
+  Placeholder size attribute, e.g. `ST_PlaceholderSize.FULL`.
+</ParamField>
+
+## PlaceholderGraphicFrame
+
+A placeholder shape populated with a table, chart, or smart art.
+
+### Properties
+
+<ParamField path="is_placeholder" type="bool">
+  Always returns `True`.
+</ParamField>
+
+<ParamField path="chart" type="Chart">
+  The Chart object contained in this graphic frame (if it contains a chart).
+</ParamField>
+
+<ParamField path="table" type="Table">
+  The Table object contained in this graphic frame (if it contains a table).
+</ParamField>
+
+## PlaceholderPicture
+
+A placeholder shape populated with a picture. Inherits dimensions from its layout placeholder.
+
+### Properties
+
+Inherits all properties from both `Picture` and `_InheritsDimensions`.
+
+<ParamField path="shape_type" type="MSO_SHAPE_TYPE">
+  Returns `MSO_SHAPE_TYPE.PLACEHOLDER` instead of `MSO_SHAPE_TYPE.PICTURE`.
+</ParamField>
+
+## NotesSlidePlaceholder
+
+A placeholder shape on a notes slide that inherits properties from the notes master placeholder of the same type.
+
+### Properties
+
+Inherits dimensions from the matching notes master placeholder based on placeholder type.

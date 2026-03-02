@@ -1,0 +1,334 @@
+---
+title: Working with images
+description: Learn how to add, position, size, and crop images in PowerPoint presentations
+---
+
+Images are added to slides using the `add_picture()` method. python-pptx supports common image formats including PNG, JPEG, GIF, BMP, and TIFF.
+
+## Adding images
+
+The `add_picture()` method adds an image to a slide at a specified position:
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[5])
+
+# Add image from file path
+img_path = 'image.png'
+left = Inches(1)
+top = Inches(1)
+pic = slide.shapes.add_picture(img_path, left, top)
+
+prs.save('image-example.pptx')
+```
+
+### Using file-like objects
+
+You can also add images from file-like objects (such as `BytesIO`):
+
+```python
+import io
+from PIL import Image
+
+# Create image in memory
+img = Image.new('RGB', (200, 200), color='red')
+img_bytes = io.BytesIO()
+img.save(img_bytes, format='PNG')
+img_bytes.seek(0)
+
+# Add to slide
+pic = slide.shapes.add_picture(img_bytes, Inches(1), Inches(1))
+```
+
+## Sizing images
+
+python-pptx provides flexible options for sizing images:
+
+<Tabs>
+  <Tab title="Native size">
+    Omit both `width` and `height` to use the image's native size:
+
+    ```python
+    # Image appears at its native size
+    pic = slide.shapes.add_picture(
+        'photo.jpg',
+        Inches(1),  # left
+        Inches(1)   # top
+    )
+    ```
+  </Tab>
+  <Tab title="Preserve aspect ratio">
+    Specify only width OR height to scale proportionally:
+
+    ```python
+    # Set width, height calculated to preserve aspect ratio
+    pic = slide.shapes.add_picture(
+        'photo.jpg',
+        Inches(1), Inches(1),
+        width=Inches(3)
+    )
+
+    # Or set height, width calculated proportionally
+    pic = slide.shapes.add_picture(
+        'photo.jpg',
+        Inches(1), Inches(1),
+        height=Inches(2)
+    )
+    ```
+  </Tab>
+  <Tab title="Explicit dimensions">
+    Specify both width and height to stretch or compress:
+
+    ```python
+    # Stretch to fill specific dimensions
+    pic = slide.shapes.add_picture(
+        'photo.jpg',
+        Inches(1), Inches(1),
+        width=Inches(4),
+        height=Inches(3)
+    )
+    ```
+
+    <Warning>
+    Setting both dimensions may distort the image if the aspect ratio doesn't match the original.
+    </Warning>
+  </Tab>
+</Tabs>
+
+## Adjusting position and size
+
+After adding an image, you can modify its position and dimensions:
+
+```python
+from pptx.util import Inches, Cm
+
+pic = slide.shapes.add_picture('image.png', Inches(1), Inches(1))
+
+# Reposition
+pic.left = Inches(2)
+pic.top = Cm(5)
+
+# Resize
+pic.width = Inches(3)
+pic.height = Inches(2.5)
+
+# Access current dimensions
+print(f"Width: {pic.width.inches} inches")
+print(f"Height: {pic.height.cm} cm")
+```
+
+### Working with EMU
+
+Internally, PowerPoint uses English Metric Units (EMU). python-pptx handles conversions automatically:
+
+```python
+from pptx.util import Inches, Cm, Pt, Emu
+
+# All of these work
+pic.left = Inches(1)     # 1 inch
+pic.top = Cm(2.54)       # 2.54 cm (equals 1 inch)
+pic.width = Pt(72)       # 72 points (equals 1 inch)
+pic.height = Emu(914400) # 914400 EMU (equals 1 inch)
+
+# Convert to different units
+print(pic.width.inches)  # → 1.0
+print(pic.width.cm)      # → 2.54
+print(pic.width.pt)      # → 72.0
+```
+
+## Cropping images
+
+Crop images by setting the crop properties. Values are proportional (1.0 = 100%):
+
+```python
+pic = slide.shapes.add_picture('image.png', Inches(1), Inches(1))
+
+# Crop 25% from each side
+pic.crop_left = 0.25
+pic.crop_right = 0.25
+pic.crop_top = 0.25
+pic.crop_bottom = 0.25
+```
+
+<Note>
+Crop values can be negative to extend the image beyond its boundaries (adding padding).
+</Note>
+
+### Practical cropping example
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[5])
+
+# Add image
+pic = slide.shapes.add_picture(
+    'landscape.jpg',
+    Inches(1), Inches(1),
+    width=Inches(4)
+)
+
+# Crop to focus on center
+pic.crop_left = 0.1   # Remove 10% from left
+pic.crop_right = 0.1  # Remove 10% from right
+pic.crop_top = 0.2    # Remove 20% from top
+pic.crop_bottom = 0.05 # Remove 5% from bottom
+
+prs.save('cropped-image.pptx')
+```
+
+## Image masking with shapes
+
+Mask images with any PowerPoint auto shape (circle, triangle, etc.):
+
+```python
+from pptx.enum.shapes import MSO_SHAPE
+
+pic = slide.shapes.add_picture(
+    'portrait.jpg',
+    Inches(2), Inches(2),
+    width=Inches(2)
+)
+
+# Mask as a circle
+pic.auto_shape_type = MSO_SHAPE.OVAL
+
+# Or other shapes
+pic.auto_shape_type = MSO_SHAPE.ROUNDED_RECTANGLE
+pic.auto_shape_type = MSO_SHAPE.TRIANGLE
+```
+
+<Note>
+The default mask is `MSO_SHAPE.RECTANGLE`, which shows the full image without any masking effect.
+</Note>
+
+## Accessing image properties
+
+Retrieve information about the embedded image:
+
+```python
+pic = slide.shapes.add_picture('photo.jpg', Inches(1), Inches(1))
+
+# Access the image object
+image = pic.image
+
+# Image properties
+print(f"Format: {image.content_type}")
+print(f"Filename: {image.filename}")
+print(f"Size: {len(image.blob)} bytes")
+
+# Get image bytes
+with open('extracted.jpg', 'wb') as f:
+    f.write(image.blob)
+```
+
+## Adding borders to images
+
+Images support line formatting for borders:
+
+```python
+from pptx.util import Pt
+from pptx.dml.color import RGBColor
+
+pic = slide.shapes.add_picture('image.png', Inches(1), Inches(1))
+
+# Add border
+line = pic.line
+line.color.rgb = RGBColor(0x00, 0x00, 0x00)  # Black
+line.width = Pt(2.5)
+```
+
+## Complete example
+
+<CodeGroup>
+```python Image gallery
+from pptx import Presentation
+from pptx.util import Inches
+from pptx.enum.shapes import MSO_SHAPE
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[5])
+
+# Image 1: Full size with border
+pic1 = slide.shapes.add_picture(
+    'photo1.jpg',
+    Inches(0.5), Inches(0.5),
+    width=Inches(2.5)
+)
+pic1.line.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+pic1.line.width = Pt(3)
+
+# Image 2: Circular crop
+pic2 = slide.shapes.add_picture(
+    'photo2.jpg',
+    Inches(3.5), Inches(0.5),
+    width=Inches(2.5)
+)
+pic2.auto_shape_type = MSO_SHAPE.OVAL
+
+# Image 3: Cropped landscape
+pic3 = slide.shapes.add_picture(
+    'photo3.jpg',
+    Inches(6.5), Inches(0.5),
+    width=Inches(2.5)
+)
+pic3.crop_top = 0.15
+pic3.crop_bottom = 0.15
+
+prs.save('image-gallery.pptx')
+```
+
+```python Dynamic image generation
+import io
+from PIL import Image, ImageDraw, ImageFont
+from pptx import Presentation
+from pptx.util import Inches
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[5])
+
+# Generate image dynamically
+img = Image.new('RGB', (400, 300), color='#4A90E2')
+draw = ImageDraw.Draw(img)
+draw.text((150, 130), 'Hello!', fill='white')
+
+# Convert to bytes
+img_bytes = io.BytesIO()
+img.save(img_bytes, format='PNG')
+img_bytes.seek(0)
+
+# Add to slide
+pic = slide.shapes.add_picture(
+    img_bytes,
+    Inches(2), Inches(2),
+    width=Inches(4)
+)
+
+prs.save('dynamic-image.pptx')
+```
+</CodeGroup>
+
+## Supported image formats
+
+python-pptx supports these image formats:
+
+- **PNG** (.png) - Best for graphics with transparency
+- **JPEG** (.jpg, .jpeg) - Best for photographs
+- **GIF** (.gif) - Supports transparency and animation
+- **BMP** (.bmp) - Windows bitmap format
+- **TIFF** (.tif, .tiff) - High-quality images
+- **WMF/EMF** (.wmf, .emf) - Vector formats
+
+## Best practices
+
+- Use PNG for images requiring transparency
+- Use JPEG for photographs to reduce file size
+- Specify only width OR height to preserve aspect ratio
+- Optimize images before adding them to reduce presentation file size
+- Use theme colors for borders when possible for consistency
+- Consider using `BytesIO` when generating images dynamically to avoid temporary files

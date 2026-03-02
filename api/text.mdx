@@ -1,0 +1,340 @@
+---
+title: Text API
+description: Text-related objects for manipulating text frames, paragraphs, and runs
+---
+
+## TextFrame
+
+The part of a shape that contains its text. Not all shapes have a text frame.
+
+### Properties
+
+<ResponseField name="text" type="str">
+  All text in this text-frame as a single string. Line-feed characters (`"\n"`) separate paragraphs, and vertical-tab characters (`"\v"`) appear for line breaks.
+  
+  ```python
+  text_frame.text = "First paragraph\nSecond paragraph"
+  ```
+</ResponseField>
+
+<ResponseField name="paragraphs" type="tuple[_Paragraph, ...]">
+  Sequence of paragraphs in this text frame. A text frame always contains at least one paragraph.
+  
+  ```python
+  for paragraph in text_frame.paragraphs:
+      print(paragraph.text)
+  ```
+</ResponseField>
+
+<ResponseField name="auto_size" type="MSO_AUTO_SIZE | None">
+  Resizing strategy used to fit text within this shape. May be `None`, `MSO_AUTO_SIZE.NONE`, `MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT`, or `MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE`.
+  
+  ```python
+  from pptx.enum.text import MSO_AUTO_SIZE
+  text_frame.auto_size = MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE
+  ```
+</ResponseField>
+
+<ResponseField name="vertical_anchor" type="MSO_VERTICAL_ANCHOR | None">
+  Vertical alignment of text in this text frame. `None` indicates the value should be inherited from the style hierarchy.
+  
+  ```python
+  from pptx.enum.text import MSO_VERTICAL_ANCHOR
+  text_frame.vertical_anchor = MSO_VERTICAL_ANCHOR.MIDDLE
+  ```
+</ResponseField>
+
+<ResponseField name="word_wrap" type="bool | None">
+  `True` when lines of text are wrapped to fit within the shape's width. Assigning `None` causes the setting to be inherited from the style hierarchy.
+  
+  ```python
+  text_frame.word_wrap = True
+  ```
+</ResponseField>
+
+<ResponseField name="margin_bottom" type="Length">
+  Inset of text from the bottom text frame border as a Length value.
+  
+  ```python
+  from pptx.util import Inches
+  text_frame.margin_bottom = Inches(0.05)
+  ```
+</ResponseField>
+
+<ResponseField name="margin_left" type="Length">
+  Inset of text from left text frame border as Length value.
+</ResponseField>
+
+<ResponseField name="margin_right" type="Length">
+  Inset of text from right text frame border as Length value.
+</ResponseField>
+
+<ResponseField name="margin_top" type="Length">
+  Inset of text from top text frame border as Length value.
+</ResponseField>
+
+### Methods
+
+<ResponseField name="add_paragraph()" type="_Paragraph">
+  Return new paragraph appended to the sequence of paragraphs in this text frame.
+  
+  ```python
+  p = text_frame.add_paragraph()
+  p.text = "New paragraph"
+  ```
+</ResponseField>
+
+<ResponseField name="clear()" type="None">
+  Remove all paragraphs except one empty one.
+  
+  ```python
+  text_frame.clear()
+  text_frame.text = "Fresh start"
+  ```
+</ResponseField>
+
+<ResponseField name="fit_text(font_family, max_size, bold, italic, font_file)" type="None">
+  Fit text entirely within bounds of its shape by setting word wrap on and applying the "best-fit" font size.
+  
+  <ParamField path="font_family" type="str" default="Calibri">
+    Font family name
+  </ParamField>
+  
+  <ParamField path="max_size" type="int" default="18">
+    Maximum font size in points
+  </ParamField>
+  
+  <ParamField path="bold" type="bool" default="False">
+    Whether text should be bold
+  </ParamField>
+  
+  <ParamField path="italic" type="bool" default="False">
+    Whether text should be italic
+  </ParamField>
+  
+  <ParamField path="font_file" type="str | None" default="None">
+    Path to TrueType font file for font metrics
+  </ParamField>
+  
+  ```python
+  text_frame.fit_text(font_family="Arial", max_size=24, bold=True)
+  ```
+</ResponseField>
+
+---
+
+## Paragraph
+
+Paragraph object. Not intended to be constructed directly.
+
+### Properties
+
+<ResponseField name="text" type="str">
+  Text of paragraph as a single string. Vertical-tab characters (`"\v"`) represent line-breaks.
+  
+  ```python
+  paragraph.text = "Line 1\vLine 2"
+  ```
+</ResponseField>
+
+<ResponseField name="runs" type="tuple[_Run, ...]">
+  Sequence of runs in this paragraph.
+  
+  ```python
+  for run in paragraph.runs:
+      run.font.bold = True
+  ```
+</ResponseField>
+
+<ResponseField name="font" type="Font">
+  Font object containing default character properties for runs in this paragraph.
+  
+  ```python
+  from pptx.util import Pt
+  paragraph.font.size = Pt(18)
+  paragraph.font.name = "Arial"
+  ```
+</ResponseField>
+
+<ResponseField name="alignment" type="PP_PARAGRAPH_ALIGNMENT | None">
+  Horizontal alignment of this paragraph. `None` indicates the paragraph inherits from its style hierarchy.
+  
+  ```python
+  from pptx.enum.text import PP_ALIGN
+  paragraph.alignment = PP_ALIGN.CENTER
+  ```
+</ResponseField>
+
+<ResponseField name="level" type="int">
+  Indentation level of this paragraph (0..8 inclusive). 0 represents a top-level paragraph.
+  
+  ```python
+  paragraph.level = 1  # First indent level
+  ```
+</ResponseField>
+
+<ResponseField name="line_spacing" type="int | float | Length | None">
+  Space between baselines in successive lines. Numeric values indicate multiples of line heights. Length values indicate fixed height.
+  
+  ```python
+  from pptx.util import Pt
+  paragraph.line_spacing = 1.5  # 1.5x line spacing
+  paragraph.line_spacing = Pt(14)  # Fixed 14pt spacing
+  ```
+</ResponseField>
+
+<ResponseField name="space_before" type="Length | None">
+  Spacing to appear between this paragraph and the prior paragraph.
+  
+  ```python
+  from pptx.util import Pt
+  paragraph.space_before = Pt(6)
+  ```
+</ResponseField>
+
+<ResponseField name="space_after" type="Length | None">
+  Spacing to appear between this paragraph and the subsequent paragraph.
+</ResponseField>
+
+### Methods
+
+<ResponseField name="add_run()" type="_Run">
+  Return a new run appended to the runs in this paragraph.
+  
+  ```python
+  run = paragraph.add_run()
+  run.text = "Bold text"
+  run.font.bold = True
+  ```
+</ResponseField>
+
+<ResponseField name="add_line_break()" type="None">
+  Add line break at end of this paragraph.
+  
+  ```python
+  paragraph.add_line_break()
+  ```
+</ResponseField>
+
+<ResponseField name="clear()" type="_Paragraph">
+  Remove all content from this paragraph. Paragraph properties are preserved.
+  
+  ```python
+  paragraph.clear()
+  paragraph.text = "New content"
+  ```
+</ResponseField>
+
+---
+
+## Run
+
+Text run object. Corresponds to `a:r` child element in a paragraph.
+
+### Properties
+
+<ResponseField name="text" type="str">
+  Unicode string containing the text in this run. Assignment replaces all text in the run.
+  
+  ```python
+  run.text = "This is a text run"
+  ```
+</ResponseField>
+
+<ResponseField name="font" type="Font">
+  Font instance containing run-level character properties for the text in this run.
+  
+  ```python
+  from pptx.util import Pt
+  run.font.size = Pt(14)
+  run.font.bold = True
+  run.font.color.rgb = RGBColor(255, 0, 0)
+  ```
+</ResponseField>
+
+<ResponseField name="hyperlink" type="_Hyperlink">
+  Proxy for any hyperlink element. Created on demand and available whether a hyperlink element is present or not.
+  
+  ```python
+  run.hyperlink.address = "https://example.com"
+  ```
+</ResponseField>
+
+---
+
+## Font
+
+Character properties object, providing font size, font name, bold, italic, etc.
+
+### Properties
+
+<ResponseField name="name" type="str | None">
+  Typeface name for this font. Returns `None` if typeface is inherited from theme. Setting to `None` removes any override.
+  
+  ```python
+  font.name = "Arial"
+  ```
+</ResponseField>
+
+<ResponseField name="size" type="Length | None">
+  Font height in English Metric Units (EMU). `None` indicates font size should be inherited.
+  
+  ```python
+  from pptx.util import Pt
+  font.size = Pt(24)
+  print(font.size.pt)  # 24.0
+  ```
+</ResponseField>
+
+<ResponseField name="bold" type="bool | None">
+  Boolean bold value. `None` clears the bold setting and inherits from style hierarchy.
+  
+  ```python
+  font.bold = True
+  ```
+</ResponseField>
+
+<ResponseField name="italic" type="bool | None">
+  Boolean italic value. Has same behaviors as bold with respect to `None` values.
+  
+  ```python
+  font.italic = True
+  ```
+</ResponseField>
+
+<ResponseField name="underline" type="bool | MSO_TEXT_UNDERLINE_TYPE | None">
+  Underline setting. `True` indicates single underline, `False` indicates no underline. Members of MsoTextUnderlineType enumeration indicate other underline styles.
+  
+  ```python
+  font.underline = True  # Single underline
+  from pptx.enum.text import MSO_UNDERLINE
+  font.underline = MSO_UNDERLINE.DOUBLE_LINE
+  ```
+</ResponseField>
+
+<ResponseField name="color" type="ColorFormat">
+  ColorFormat instance providing access to the color settings for this font.
+  
+  ```python
+  from pptx.util import RGBColor
+  font.color.rgb = RGBColor(255, 0, 0)
+  ```
+</ResponseField>
+
+<ResponseField name="fill" type="FillFormat">
+  FillFormat instance for this font. Provides access to fill properties such as fill color.
+  
+  ```python
+  font.fill.solid()
+  font.fill.fore_color.rgb = RGBColor(0, 0, 255)
+  ```
+</ResponseField>
+
+<ResponseField name="language_id" type="MSO_LANGUAGE_ID | None">
+  Language id of this font. Member of the MsoLanguageId enumeration. Assigning `None` removes any language setting.
+  
+  ```python
+  from pptx.enum.lang import MSO_LANGUAGE_ID
+  font.language_id = MSO_LANGUAGE_ID.ENGLISH_US
+  ```
+</ResponseField>

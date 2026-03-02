@@ -1,0 +1,421 @@
+---
+title: "Slides"
+description: "Working with slides, slide layouts, and slide-level properties"
+icon: "presentation-screen"
+---
+
+Slides are the individual pages in a PowerPoint presentation. Each slide is based on a slide layout that defines its structure and placeholder arrangement.
+
+## Understanding slide layouts
+
+A slide layout acts as a template for slides. It determines which placeholders appear and how they're formatted.
+
+### Layout inheritance
+
+Slides inherit formatting and structure from their layout:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+
+# Each slide is created from a layout
+title_layout = prs.slide_layouts[0]
+slide = prs.slides.add_slide(title_layout)
+
+# Access the slide's layout
+layout = slide.slide_layout
+print(f"Layout name: {layout.name}")
+```
+
+Slide layouts themselves inherit from the slide master, creating a three-level hierarchy: master → layout → slide.
+
+### Common slide layouts
+
+Standard PowerPoint themes include these layouts in typical order:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+
+layouts = {
+    'title': prs.slide_layouts[0],           # Title Slide
+    'content': prs.slide_layouts[1],         # Title and Content
+    'section': prs.slide_layouts[2],         # Section Header
+    'two_content': prs.slide_layouts[3],     # Two Content
+    'comparison': prs.slide_layouts[4],      # Comparison
+    'title_only': prs.slide_layouts[5],      # Title Only
+    'blank': prs.slide_layouts[6],           # Blank
+    'content_caption': prs.slide_layouts[7], # Content with Caption
+    'picture_caption': prs.slide_layouts[8]  # Picture with Caption
+}
+```
+
+<Warning>
+Layout order is a convention, not a requirement. Always verify layout indices for your specific template by opening it in PowerPoint's Slide Master view.
+</Warning>
+
+## Adding slides
+
+Add slides to a presentation using the `slides.add_slide()` method:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+
+# Select a layout
+content_layout = prs.slide_layouts[1]
+
+# Add slide
+slide = prs.slides.add_slide(content_layout)
+
+# Work with the slide
+slide.shapes.title.text = "My Slide Title"
+```
+
+New slides are always appended to the end of the presentation.
+
+## Accessing slides
+
+The `slides` collection provides list-like access to slides:
+
+```python
+from pptx import Presentation
+
+prs = Presentation('existing.pptx')
+
+# Access by index
+first_slide = prs.slides[0]
+last_slide = prs.slides[-1]
+
+# Get slide count
+count = len(prs.slides)
+
+# Iterate through slides
+for idx, slide in enumerate(prs.slides):
+    print(f"Slide {idx + 1}")
+```
+
+### Finding slides by ID
+
+Each slide has a unique ID that persists even when slides are reordered:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+layout = prs.slide_layouts[1]
+slide = prs.slides.add_slide(layout)
+
+# Get slide ID
+slide_id = slide.slide_id
+print(f"Slide ID: {slide_id}")
+
+# Find slide by ID later
+found_slide = prs.slides.get(slide_id)
+if found_slide:
+    print("Slide found")
+```
+
+The `get()` method returns the slide with the specified ID, or `None` (or a default value) if not found.
+
+### Getting slide position
+
+Find a slide's position in the presentation:
+
+```python
+from pptx import Presentation
+
+prs = Presentation('presentation.pptx')
+slide = prs.slides[3]
+
+# Get index position
+position = prs.slides.index(slide)
+print(f"Slide is at position {position}")
+```
+
+The `index()` method raises `ValueError` if the slide is not in the collection.
+
+## Slide properties
+
+### Slide name
+
+Each slide has an internal name property:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+
+# Read slide name
+print(f"Name: {slide.name}")
+
+# Set slide name
+slide.name = "Introduction Slide"
+
+# Clear slide name
+slide.name = None  # or ""
+```
+
+Slide names are internal identifiers and don't appear in PowerPoint's normal view.
+
+### Slide ID
+
+Get the unique identifier for a slide:
+
+```python
+slide_id = slide.slide_id
+```
+
+The slide ID is assigned when the slide is created and doesn't change even if slides are reordered.
+
+## Slide backgrounds
+
+### Background inheritance
+
+By default, slides inherit their background from the slide master:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+
+# Check if using master background
+if slide.follow_master_background:
+    print("Using master background")
+```
+
+### Custom backgrounds
+
+Set a custom background by modifying the `follow_master_background` property:
+
+```python
+from pptx import Presentation
+from pptx.enum.dml import MSO_FILL_TYPE
+from pptx.util import RGBColor
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+
+# Stop following master
+slide.follow_master_background = False
+
+# Set solid fill background
+background = slide.background
+fill = background.fill
+fill.solid()
+fill.fore_color.rgb = RGBColor(42, 42, 42)
+
+prs.save('dark-background.pptx')
+```
+
+<Warning>
+Accessing `slide.background.fill` is potentially destructive. It removes any background style reference and replaces it with NoFill if no explicit background exists.
+</Warning>
+
+### Restoring master background
+
+Restore master background inheritance:
+
+```python
+# Restore master background (removes custom background)
+slide.follow_master_background = True
+```
+
+Setting `follow_master_background` to `True` deletes any custom background.
+
+## Working with shapes
+
+Access and manipulate shapes on a slide:
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[6])  # Blank layout
+
+# Access shapes collection
+shapes = slide.shapes
+
+# Add a textbox
+left = top = width = height = Inches(2)
+textbox = shapes.add_textbox(left, top, width, height)
+textbox.text = "Hello, World!"
+
+# Count shapes
+shape_count = len(shapes)
+
+# Iterate through shapes
+for shape in shapes:
+    print(f"Shape: {shape.name}")
+```
+
+See [Shapes](/concepts/shapes) for detailed information on working with shapes.
+
+## Working with placeholders
+
+Placeholders are special shapes that inherit formatting from the layout:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[1])  # Title and Content
+
+# Access placeholders
+title_placeholder = slide.shapes.title
+body_placeholder = slide.placeholders[1]
+
+# Set placeholder text
+title_placeholder.text = "Slide Title"
+body_placeholder.text = "Bullet point content"
+```
+
+See [Placeholders](/concepts/placeholders) for detailed information.
+
+## Notes slides
+
+Each slide can have an associated notes slide for speaker notes:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+
+# Check if notes slide exists
+if slide.has_notes_slide:
+    print("Has notes")
+
+# Access notes slide (creates if doesn't exist)
+notes_slide = slide.notes_slide
+
+# Add notes text
+text_frame = notes_slide.notes_text_frame
+if text_frame:
+    text_frame.text = "Remember to emphasize this point"
+```
+
+Accessing `notes_slide` creates a notes slide if one doesn't exist. Use `has_notes_slide` to check without side effects.
+
+## Slide layouts in detail
+
+### Accessing layout properties
+
+Slide layouts have their own shapes and placeholders:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+layout = prs.slide_layouts[1]
+
+# Layout properties
+print(f"Layout name: {layout.name}")
+print(f"Placeholder count: {len(layout.placeholders)}")
+
+# Access layout's slide master
+master = layout.slide_master
+
+# Find slides using this layout
+slides_using_layout = layout.used_by_slides
+print(f"Used by {len(slides_using_layout)} slides")
+```
+
+### Finding layouts by name
+
+Search for a layout by its name:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+layouts = prs.slide_layouts
+
+# Find by name
+title_layout = layouts.get_by_name('Title Slide')
+if title_layout:
+    slide = prs.slides.add_slide(title_layout)
+```
+
+## Complete example
+
+Create a multi-slide presentation:
+
+```python
+from pptx import Presentation
+from pptx.util import Inches, Pt
+
+prs = Presentation()
+
+# Title slide
+title_layout = prs.slide_layouts[0]
+slide = prs.slides.add_slide(title_layout)
+title = slide.shapes.title
+subtitle = slide.placeholders[1]
+title.text = "Annual Report"
+subtitle.text = "2024 Results"
+
+# Section header
+section_layout = prs.slide_layouts[2]
+slide = prs.slides.add_slide(section_layout)
+slide.shapes.title.text = "Financial Overview"
+
+# Content slide with custom background
+content_layout = prs.slide_layouts[1]
+slide = prs.slides.add_slide(content_layout)
+slide.shapes.title.text = "Key Metrics"
+slide.name = "Metrics Slide"
+
+# Add bullet points
+body_shape = slide.placeholders[1]
+tf = body_shape.text_frame
+tf.text = "Revenue up 25%"
+p = tf.add_paragraph()
+p.text = "Customer growth 40%"
+p.level = 1
+
+# Add speaker notes
+notes_slide = slide.notes_slide
+notes_slide.notes_text_frame.text = "Emphasize customer growth"
+
+prs.save('annual-report.pptx')
+```
+
+## API reference
+
+### Slide class
+
+**Properties:**
+- `background` - `_Background` object for slide background
+- `follow_master_background` - `True` if inheriting master background (read/write)
+- `has_notes_slide` - `True` if slide has notes
+- `name` - Slide internal name (read/write)
+- `notes_slide` - `NotesSlide` instance (creates if needed)
+- `placeholders` - `SlidePlaceholders` collection
+- `shapes` - `SlideShapes` collection
+- `slide_id` - Unique integer identifier
+- `slide_layout` - `SlideLayout` this slide inherits from
+
+### Slides collection
+
+**Methods:**
+- `add_slide(layout)` - Add new slide with specified layout
+- `get(slide_id, default=None)` - Get slide by ID
+- `index(slide)` - Get position of slide
+
+**Supports:** indexing `[i]`, `len()`, iteration
+
+### SlideLayout class
+
+**Properties:**
+- `name` - Layout name (read/write)
+- `placeholders` - `LayoutPlaceholders` collection  
+- `shapes` - `LayoutShapes` collection
+- `slide_master` - Parent `SlideMaster` object
+- `used_by_slides` - Tuple of slides using this layout

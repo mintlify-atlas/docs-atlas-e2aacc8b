@@ -1,0 +1,365 @@
+---
+title: Chart Data API
+description: ChartData objects for specifying chart data
+---
+
+## CategoryChartData
+
+Accumulates data specifying categories and series values for a chart. Used as a parameter in `shapes.add_chart()` and `Chart.replace_data()`.
+
+Suitable for category charts (those with discrete category labels). Each data point specifies only the Y value; the X value is inferred by position.
+
+### Methods
+
+<ResponseField name="__init__(number_format)" type="CategoryChartData">
+  Create a new CategoryChartData instance.
+  
+  <ParamField path="number_format" type="str" default="General">
+    Excel number format string (e.g., '#,##0.0')
+  </ParamField>
+  
+  ```python
+  from pptx.chart.data import CategoryChartData
+  
+  chart_data = CategoryChartData()
+  chart_data.categories = ['Q1', 'Q2', 'Q3', 'Q4']
+  chart_data.add_series('Revenue', (10.5, 20.3, 30.1, 40.8))
+  ```
+</ResponseField>
+
+<ResponseField name="add_category(label)" type="Category">
+  Return newly created Category object appended to the category collection.
+  
+  <ParamField path="label" type="str | number | datetime.date | datetime.datetime" required>
+    Category label. All labels must be the same type.
+  </ParamField>
+  
+  ```python
+  chart_data.add_category('East')
+  chart_data.add_category('West')
+  ```
+</ResponseField>
+
+<ResponseField name="add_series(name, values, number_format)" type="CategorySeriesData">
+  Add a series to this data set.
+  
+  <ParamField path="name" type="str" required>
+    Series name (appears in legend)
+  </ParamField>
+  
+  <ParamField path="values" type="iterable" default="()">
+    Iterable of numeric values
+  </ParamField>
+  
+  <ParamField path="number_format" type="str | None" default="None">
+    Excel number format for this series
+  </ParamField>
+  
+  ```python
+  chart_data.add_series('Revenue', (42, 38, 51, 47))
+  chart_data.add_series('Costs', (31, 29, 38, 35), number_format='#,##0')
+  ```
+</ResponseField>
+
+### Properties
+
+<ResponseField name="categories" type="Categories">
+  Categories object providing access to category-object hierarchy. Assigning an iterable of labels replaces the Categories object.
+  
+  ```python
+  chart_data.categories = ['North', 'South', 'East', 'West']
+  # or use date categories
+  from datetime import date
+  chart_data.categories = [date(2024, 1, 1), date(2024, 2, 1)]
+  ```
+</ResponseField>
+
+<ResponseField name="number_format" type="str">
+  Excel number format template string. Can be overridden per series or data point.
+  
+  ```python
+  chart_data.number_format = '#,##0.00'
+  ```
+</ResponseField>
+
+---
+
+## XyChartData
+
+Specialized ChartData for XY (scatter) charts. Has no category sequence. Each data point specifies both X and Y values.
+
+### Methods
+
+<ResponseField name="__init__(number_format)" type="XyChartData">
+  Create a new XyChartData instance.
+  
+  <ParamField path="number_format" type="str" default="General">
+    Excel number format string
+  </ParamField>
+  
+  ```python
+  from pptx.chart.data import XyChartData
+  
+  chart_data = XyChartData()
+  series = chart_data.add_series('Series 1')
+  series.add_data_point(1.5, 10.2)
+  series.add_data_point(2.3, 15.7)
+  ```
+</ResponseField>
+
+<ResponseField name="add_series(name, number_format)" type="XySeriesData">
+  Return XySeriesData object newly created and added at the end of this sequence.
+  
+  <ParamField path="name" type="str" required>
+    Series name
+  </ParamField>
+  
+  <ParamField path="number_format" type="str | None" default="None">
+    Excel number format for this series
+  </ParamField>
+  
+  ```python
+  series = chart_data.add_series('Temperature vs Time')
+  series.add_data_point(0, 20.5)
+  series.add_data_point(1, 22.3)
+  ```
+</ResponseField>
+
+---
+
+## BubbleChartData
+
+Specialized ChartData for bubble charts. Essentially an XY chart where markers are scaled to provide a third quantitative dimension.
+
+### Methods
+
+<ResponseField name="__init__(number_format)" type="BubbleChartData">
+  Create a new BubbleChartData instance.
+  
+  <ParamField path="number_format" type="str" default="General">
+    Excel number format string
+  </ParamField>
+  
+  ```python
+  from pptx.chart.data import BubbleChartData
+  
+  chart_data = BubbleChartData()
+  series = chart_data.add_series('Product A')
+  series.add_data_point(10, 50, 1000)  # x, y, size
+  ```
+</ResponseField>
+
+<ResponseField name="add_series(name, number_format)" type="BubbleSeriesData">
+  Return BubbleSeriesData object newly created and added to this sequence.
+  
+  <ParamField path="name" type="str" required>
+    Series name
+  </ParamField>
+  
+  <ParamField path="number_format" type="str | None" default="None">
+    Excel number format for this series
+  </ParamField>
+  
+  ```python
+  series = chart_data.add_series('Market Share')
+  series.add_data_point(25, 75, 5000)  # x=price, y=sales, size=profit
+  ```
+</ResponseField>
+
+---
+
+## Categories
+
+Sequence of Category objects with hierarchical graph behaviors for multi-level categories.
+
+### Methods
+
+<ResponseField name="add_category(label)" type="Category">
+  Return newly created Category object appended to the end of this sequence.
+  
+  <ParamField path="label" type="str | number | datetime.date | datetime.datetime" required>
+    Category label. All labels must be the same type.
+  </ParamField>
+  
+  ```python
+  categories = chart_data.categories
+  cat1 = categories.add_category('Q1')
+  cat1.add_sub_category('Jan')
+  cat1.add_sub_category('Feb')
+  ```
+</ResponseField>
+
+### Properties
+
+<ResponseField name="are_dates" type="bool">
+  `True` if first category has a date label (datetime.date or datetime.datetime). Returns `False` for hierarchical categories.
+  
+  ```python
+  if chart_data.categories.are_dates:
+      print("Using date axis")
+  ```
+</ResponseField>
+
+<ResponseField name="are_numeric" type="bool">
+  `True` if first category has a numeric label (including dates). Returns `False` for hierarchical categories.
+</ResponseField>
+
+<ResponseField name="depth" type="int">
+  Number of hierarchy levels in this category graph. Returns 0 if it contains no categories.
+  
+  ```python
+  if chart_data.categories.depth > 1:
+      print("Multi-level categories")
+  ```
+</ResponseField>
+
+<ResponseField name="leaf_count" type="int">
+  Number of leaf-level categories in this hierarchy. Same as `len()` only when hierarchy is single level.
+</ResponseField>
+
+<ResponseField name="number_format" type="str">
+  Excel number format string. Only relevant for numeric or date categories. Assigning `None` uses default format.
+  
+  ```python
+  categories.number_format = 'mm/dd/yyyy'
+  ```
+</ResponseField>
+
+---
+
+## Category
+
+Chart category with a label for the category axis. Can be configured in a hierarchy for multi-level categories.
+
+### Methods
+
+<ResponseField name="add_sub_category(label)" type="Category">
+  Return newly created Category object appended to the sub-category sequence.
+  
+  <ParamField path="label" type="str" required>
+    Sub-category label
+  </ParamField>
+  
+  ```python
+  quarter = chart_data.categories.add_category('Q1')
+  quarter.add_sub_category('January')
+  quarter.add_sub_category('February')
+  quarter.add_sub_category('March')
+  ```
+</ResponseField>
+
+### Properties
+
+<ResponseField name="label" type="str | number | datetime.date | datetime.datetime">
+  Value that appears on the axis for this category. Can be a string, number, or date.
+  
+  ```python
+  category.label  # Read-only access to label
+  ```
+</ResponseField>
+
+<ResponseField name="sub_categories" type="list[Category]">
+  Sequence of child categories for this category.
+  
+  ```python
+  for sub_cat in category.sub_categories:
+      print(sub_cat.label)
+  ```
+</ResponseField>
+
+---
+
+## XySeriesData
+
+Data for a particular XY chart series. The sequence of data points is significant; lines follow the sequence even if that causes backward movement.
+
+### Methods
+
+<ResponseField name="add_data_point(x, y, number_format)" type="XyDataPoint">
+  Return XyDataPoint object newly created with values x and y, appended to this sequence.
+  
+  <ParamField path="x" type="float" required>
+    X value for this data point
+  </ParamField>
+  
+  <ParamField path="y" type="float" required>
+    Y value for this data point
+  </ParamField>
+  
+  <ParamField path="number_format" type="str | None" default="None">
+    Excel number format for this point
+  </ParamField>
+  
+  ```python
+  series = chart_data.add_series('Temperature')
+  series.add_data_point(0.0, 20.5)
+  series.add_data_point(1.0, 22.3)
+  series.add_data_point(2.0, 21.8)
+  ```
+</ResponseField>
+
+### Properties
+
+<ResponseField name="name" type="str">
+  Name of this series (column heading for y-values, appears in legend).
+</ResponseField>
+
+<ResponseField name="number_format" type="str">
+  Formatting template for numbers in this series. Inherits from chart data if not specified.
+</ResponseField>
+
+<ResponseField name="x_values" type="list[float]">
+  Sequence containing the X value of each datapoint in this series.
+  
+  ```python
+  x_vals = series.x_values  # [0.0, 1.0, 2.0]
+  ```
+</ResponseField>
+
+<ResponseField name="y_values" type="list[float]">
+  Sequence containing the Y value of each datapoint in this series.
+</ResponseField>
+
+---
+
+## BubbleSeriesData
+
+Data for a particular Bubble chart series. Extends XySeriesData with bubble size.
+
+### Methods
+
+<ResponseField name="add_data_point(x, y, size, number_format)" type="BubbleDataPoint">
+  Append new BubbleDataPoint with values x, y, and size.
+  
+  <ParamField path="x" type="float" required>
+    X value for this data point
+  </ParamField>
+  
+  <ParamField path="y" type="float" required>
+    Y value for this data point
+  </ParamField>
+  
+  <ParamField path="size" type="float" required>
+    Bubble size for this data point
+  </ParamField>
+  
+  <ParamField path="number_format" type="str | None" default="None">
+    Excel number format for Y value
+  </ParamField>
+  
+  ```python
+  series = chart_data.add_series('Product Performance')
+  series.add_data_point(25, 75, 5000)  # price, sales, profit
+  series.add_data_point(30, 65, 4500)
+  ```
+</ResponseField>
+
+### Properties
+
+<ResponseField name="bubble_sizes" type="list[float]">
+  Sequence containing the bubble size for each datapoint in this series.
+  
+  ```python
+  sizes = series.bubble_sizes  # [5000, 4500]
+  ```
+</ResponseField>

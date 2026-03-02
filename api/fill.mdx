@@ -1,0 +1,233 @@
+---
+title: FillFormat
+description: Access to fill properties for shapes including solid, gradient, pattern, and picture fills.
+---
+
+The `FillFormat` object provides access to fill properties for shapes and other objects. It supports solid fills, gradient fills, pattern fills, picture fills, and background (no fill).
+
+## Usage
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+from pptx.dml.color import RGBColor
+from pptx.enum.dml import MSO_THEME_COLOR
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+shape = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(1), Inches(1), Inches(2), Inches(1))
+
+# Solid fill
+shape.fill.solid()
+shape.fill.fore_color.rgb = RGBColor(255, 127, 0)
+
+# Gradient fill
+shape.fill.gradient()
+shape.fill.gradient_angle = 90.0  # Bottom to top
+shape.fill.gradient_stops[0].color.theme_color = MSO_THEME_COLOR.ACCENT_1
+shape.fill.gradient_stops[1].color.rgb = RGBColor(255, 255, 255)
+
+# No fill (transparent)
+shape.fill.background()
+```
+
+## Properties
+
+<ParamField path="type" type="MSO_FILL_TYPE">
+  Read-only. The type of this fill.
+  
+  Values from `MSO_FILL` enumeration:
+  - `MSO_FILL.SOLID` - Solid color fill
+  - `MSO_FILL.GRADIENT` - Gradient fill
+  - `MSO_FILL.PATTERNED` - Pattern fill
+  - `MSO_FILL.PICTURE` - Picture (image) fill
+  - `MSO_FILL.BACKGROUND` - No fill (transparent)
+  - `MSO_FILL.GROUP` - Inherited from group
+  - `None` - No fill defined
+</ParamField>
+
+<ParamField path="fore_color" type="ColorFormat">
+  ColorFormat instance representing the foreground color of this fill.
+  
+  For solid fills, this is the fill color. For gradient and pattern fills, this is the primary color.
+  
+  Raises `TypeError` if fill type does not support foreground color. Call `.solid()` or `.patterned()` first.
+</ParamField>
+
+<ParamField path="back_color" type="ColorFormat">
+  ColorFormat instance representing the background color.
+  
+  This property is only applicable to pattern fills.
+  
+  Raises `TypeError` if fill type is not patterned. Call `.patterned()` first.
+</ParamField>
+
+<ParamField path="gradient_angle" type="float">
+  Read/write. Angle in degrees of a linear gradient.
+  
+  - `0.0` = left-to-right gradient
+  - `90.0` = bottom-to-top gradient
+  - `180.0` = right-to-left gradient
+  - `270.0` = top-to-bottom gradient
+  
+  May be `None`, indicating the angle is inherited from the style hierarchy.
+  
+  Raises `TypeError` if fill type is not `MSO_FILL.GRADIENT`. Call `.gradient()` first.
+  
+  Raises `ValueError` for non-linear gradients (e.g., radial gradients).
+</ParamField>
+
+<ParamField path="gradient_stops" type="GradientStops">
+  Read-only. GradientStops collection providing access to the gradient color stops.
+  
+  Each stop represents a color between which the gradient smoothly transitions. Gradients must have at least two stops.
+  
+  Raises `TypeError` if fill type is not `MSO_FILL.GRADIENT`. Call `.gradient()` first.
+</ParamField>
+
+<ParamField path="pattern" type="MSO_PATTERN_TYPE">
+  Read/write. Member of `MSO_PATTERN_TYPE` enumeration indicating the fill pattern.
+  
+  Returns `None` if no pattern has been set. PowerPoint may display the default `PERCENT_5` pattern in this case.
+  
+  Assigning `None` removes any explicit pattern setting.
+  
+  Raises `TypeError` if fill type is not patterned. Call `.patterned()` first.
+</ParamField>
+
+## Methods
+
+### solid()
+
+Sets the fill type to solid color.
+
+```python
+shape.fill.solid()
+shape.fill.fore_color.rgb = RGBColor(255, 127, 0)
+```
+
+Note: Calling this method does not set a color. It only enables subsequent assignments to `fore_color`.
+
+### gradient()
+
+Sets the fill type to gradient.
+
+```python
+shape.fill.gradient()
+shape.fill.gradient_angle = 90.0
+```
+
+If the fill is not already a gradient, a default gradient is added matching PowerPoint's built-in "White" template. The default is a linear gradient at 90 degrees (upward) with two stops using Accent-1 theme color.
+
+### patterned()
+
+Sets the fill type to pattern.
+
+```python
+from pptx.enum.dml import MSO_PATTERN_TYPE
+
+shape.fill.patterned()
+shape.fill.pattern = MSO_PATTERN_TYPE.WAVE
+shape.fill.fore_color.rgb = RGBColor(255, 0, 0)
+shape.fill.back_color.rgb = RGBColor(255, 255, 255)
+```
+
+Note: Calling this method does not set a pattern or colors. It enables subsequent assignments to `pattern`, `fore_color`, and `back_color`.
+
+### background()
+
+Sets the fill type to no fill (transparent).
+
+```python
+shape.fill.background()
+```
+
+This is equivalent to `MSO_FILL.BACKGROUND` and makes the shape transparent.
+
+## GradientStops
+
+A sequence of gradient stops defining the colors in a gradient fill. Access via `fill.gradient_stops`.
+
+```python
+shape.fill.gradient()
+stops = shape.fill.gradient_stops
+
+# Access individual stops
+stops[0].color.theme_color = MSO_THEME_COLOR.ACCENT_1
+stops[0].position = 0.0  # Start of gradient
+
+stops[1].color.rgb = RGBColor(255, 255, 255)
+stops[1].position = 1.0  # End of gradient
+
+# Iterate through stops
+for stop in stops:
+    print(f"Position: {stop.position}, Color: {stop.color.rgb}")
+```
+
+### GradientStop Properties
+
+<ParamField path="color" type="ColorFormat">
+  ColorFormat instance controlling the color of this gradient stop.
+</ParamField>
+
+<ParamField path="position" type="float">
+  Read/write. Location of the stop in the gradient path as a float between 0.0 and 1.0.
+  
+  - `0.0` (0%) = start of the gradient path
+  - `1.0` (100%) = end of the gradient path
+  
+  For linear gradients, these represent opposing extents of the filled area.
+</ParamField>
+
+## Examples
+
+### Solid Fill
+
+```python
+from pptx.dml.color import RGBColor
+
+shape.fill.solid()
+shape.fill.fore_color.rgb = RGBColor(255, 127, 0)  # Orange
+```
+
+### Gradient Fill with Custom Colors
+
+```python
+shape.fill.gradient()
+shape.fill.gradient_angle = 45.0  # Diagonal
+
+# First stop: blue
+shape.fill.gradient_stops[0].color.rgb = RGBColor(0, 112, 192)
+shape.fill.gradient_stops[0].position = 0.0
+
+# Second stop: light blue
+shape.fill.gradient_stops[1].color.rgb = RGBColor(155, 194, 230)
+shape.fill.gradient_stops[1].position = 1.0
+```
+
+### Pattern Fill
+
+```python
+from pptx.enum.dml import MSO_PATTERN_TYPE
+
+shape.fill.patterned()
+shape.fill.pattern = MSO_PATTERN_TYPE.DIAGONAL_BRICK
+shape.fill.fore_color.rgb = RGBColor(255, 0, 0)  # Red foreground
+shape.fill.back_color.rgb = RGBColor(255, 255, 255)  # White background
+```
+
+### Theme Color with Brightness
+
+```python
+from pptx.enum.dml import MSO_THEME_COLOR
+
+shape.fill.solid()
+shape.fill.fore_color.theme_color = MSO_THEME_COLOR.ACCENT_1
+shape.fill.fore_color.brightness = -0.25  # 25% darker
+```
+
+### Transparent Fill
+
+```python
+shape.fill.background()
+```

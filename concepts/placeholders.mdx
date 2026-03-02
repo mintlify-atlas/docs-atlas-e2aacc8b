@@ -1,0 +1,532 @@
+---
+title: "Placeholders"
+description: "Understanding placeholders and how they enable template-based presentation design"
+icon: "square-dashed"
+---
+
+Placeholders are special shapes that provide pre-formatted containers for content. They enable template-based design by allowing slide layouts to define formatting while users focus on content.
+
+## What are placeholders?
+
+A placeholder is a shape with special behaviors that inherits formatting from its layout:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[1])  # Title and Content layout
+
+# Access title placeholder
+title = slide.shapes.title
+title.text = "My Presentation"
+
+# Access other placeholders by index
+subtitle = slide.placeholders[1]
+subtitle.text = "Content goes here"
+```
+
+Placeholders automatically inherit position, size, font, color, and other formatting from the slide layout.
+
+## Placeholder hierarchy
+
+Placeholders exist in a three-level inheritance hierarchy:
+
+1. **Master placeholder** - Defined on the slide master
+2. **Layout placeholder** - Defined on the slide layout, inherits from master
+3. **Slide placeholder** - Appears on slides, inherits from layout
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+layout = prs.slide_layouts[1]
+slide = prs.slides.add_slide(layout)
+
+# Slide placeholder
+slide_ph = slide.placeholders[1]
+
+# Its layout placeholder
+layout_ph = layout.placeholders[1]
+
+# Layout inherits from master placeholder by type
+master = layout.slide_master
+master_placeholders = master.placeholders
+```
+
+### Inheritance rules
+
+- **Layout to Master**: Layout placeholder inherits from master placeholder with the same **type**
+- **Slide to Layout**: Slide placeholder inherits from layout placeholder with the same **idx** (index)
+
+Formatting properties (position, size, fill, line, font) are inherited unless directly overridden.
+
+## Placeholder types
+
+PowerPoint defines 18 placeholder types:
+
+### Text placeholders
+
+```python
+from pptx import Presentation
+from pptx.enum.shapes import PP_PLACEHOLDER
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[0])  # Title slide
+
+# Common text placeholder types
+for placeholder in slide.placeholders:
+    ph_type = placeholder.placeholder_format.type
+    
+    if ph_type == PP_PLACEHOLDER.TITLE:
+        placeholder.text = "Main Title"
+    elif ph_type == PP_PLACEHOLDER.SUBTITLE:
+        placeholder.text = "Subtitle text"
+    elif ph_type == PP_PLACEHOLDER.BODY:
+        placeholder.text = "Body content"
+    elif ph_type == PP_PLACEHOLDER.CENTER_TITLE:
+        placeholder.text = "Centered title"
+```
+
+Text-only placeholder types:
+- `TITLE` - Main slide title
+- `CENTER_TITLE` - Centered title
+- `SUBTITLE` - Subtitle on title slides  
+- `BODY` - Body text with bullets
+
+### Content placeholders
+
+```python
+from pptx import Presentation
+from pptx.enum.shapes import PP_PLACEHOLDER
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+
+# Find content placeholder
+for placeholder in slide.placeholders:
+    if placeholder.placeholder_format.type == PP_PLACEHOLDER.OBJECT:
+        # Content placeholder - accepts text, table, chart, image, etc.
+        placeholder.text = "Can insert various content types"
+```
+
+Content placeholder types:
+- `OBJECT` - Multi-purpose content placeholder
+- `PICTURE` / `CLIP_ART` - Image insertion
+- `CHART` - Chart insertion
+- `TABLE` - Table insertion  
+- `SMART_ART` / `ORG_CHART` - Diagram insertion
+- `MEDIA_CLIP` - Video/audio insertion
+
+### Metadata placeholders
+
+```python
+from pptx import Presentation
+from pptx.enum.shapes import PP_PLACEHOLDER
+
+prs = Presentation()
+master = prs.slide_master
+
+# These appear on masters/layouts but behave differently
+for placeholder in master.placeholders:
+    ph_type = placeholder.placeholder_format.type
+    
+    if ph_type == PP_PLACEHOLDER.DATE:
+        print("Date placeholder")
+    elif ph_type == PP_PLACEHOLDER.FOOTER:
+        print("Footer placeholder")
+    elif ph_type == PP_PLACEHOLDER.SLIDE_NUMBER:
+        print("Slide number placeholder")
+```
+
+Metadata placeholder types:
+- `DATE` - Date/time field
+- `FOOTER` - Footer text
+- `SLIDE_NUMBER` - Slide number
+- `HEADER` - Header (notes/handout only)
+
+## Accessing placeholders
+
+### By position (index)
+
+Access placeholders by their idx value:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+
+# Access by index
+title = slide.placeholders[0]  # Usually title
+body = slide.placeholders[1]   # Usually body/content
+
+# Iterate through all placeholders
+for placeholder in slide.placeholders:
+    idx = placeholder.placeholder_format.idx
+    print(f"Placeholder {idx}: {placeholder.name}")
+```
+
+### By type
+
+Find placeholders by their type:
+
+```python
+from pptx import Presentation
+from pptx.enum.shapes import PP_PLACEHOLDER
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+
+# Find specific placeholder type
+for placeholder in slide.placeholders:
+    if placeholder.placeholder_format.type == PP_PLACEHOLDER.BODY:
+        body_ph = placeholder
+        break
+```
+
+### Title shortcut
+
+Access the title placeholder directly:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+
+# Shortcut for title placeholder
+title = slide.shapes.title
+title.text = "Slide Title"
+
+# Equivalent to finding it manually
+for shape in slide.shapes:
+    if shape.is_placeholder:
+        ph_type = shape.placeholder_format.type
+        if ph_type in (PP_PLACEHOLDER.TITLE, PP_PLACEHOLDER.CENTER_TITLE):
+            title = shape
+            break
+```
+
+## Using placeholders
+
+### Adding text
+
+Set text content on text placeholders:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+
+# Simple text assignment
+slide.shapes.title.text = "Quarterly Results"
+
+# Multi-paragraph body text
+body = slide.placeholders[1]
+tf = body.text_frame
+tf.text = "First bullet point"
+
+p = tf.add_paragraph()
+p.text = "Second bullet point"
+p.level = 1  # Indent level
+
+p = tf.add_paragraph()
+p.text = "Sub-bullet"
+p.level = 2
+```
+
+### Inserting pictures
+
+Replace picture placeholders with images:
+
+```python
+from pptx import Presentation
+from pptx.enum.shapes import PP_PLACEHOLDER
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[8])  # Picture with Caption
+
+# Find picture placeholder
+for placeholder in slide.placeholders:
+    if placeholder.placeholder_format.type == PP_PLACEHOLDER.PICTURE:
+        # Insert picture
+        picture = placeholder.insert_picture('image.jpg')
+        break
+```
+
+### Inserting charts
+
+Populate chart placeholders:
+
+```python
+from pptx import Presentation
+from pptx.enum.shapes import PP_PLACEHOLDER
+from pptx.chart.data import ChartData
+from pptx.enum.chart import XL_CHART_TYPE
+
+prs = Presentation()
+layout = prs.slide_layouts[8]  # Layout with chart placeholder
+slide = prs.slides.add_slide(layout)
+
+# Prepare chart data
+chart_data = ChartData()
+chart_data.categories = ['Q1', 'Q2', 'Q3', 'Q4']
+chart_data.add_series('Sales', (100, 150, 125, 175))
+
+# Find and populate chart placeholder
+for placeholder in slide.placeholders:
+    if placeholder.placeholder_format.type == PP_PLACEHOLDER.CHART:
+        graphic_frame = placeholder.insert_chart(
+            XL_CHART_TYPE.COLUMN_CLUSTERED,
+            chart_data
+        )
+        chart = graphic_frame.chart
+        break
+```
+
+### Inserting tables
+
+Populate table placeholders:
+
+```python
+from pptx import Presentation  
+from pptx.enum.shapes import PP_PLACEHOLDER
+
+prs = Presentation()
+layout = prs.slide_layouts[8]  # Layout with table placeholder
+slide = prs.slides.add_slide(layout)
+
+# Find and populate table placeholder
+for placeholder in slide.placeholders:
+    if placeholder.placeholder_format.type == PP_PLACEHOLDER.TABLE:
+        graphic_frame = placeholder.insert_table(rows=3, cols=3)
+        table = graphic_frame.table
+        table.cell(0, 0).text = "Header"
+        break
+```
+
+## Placeholder states
+
+### Unpopulated vs populated
+
+Placeholders have two states:
+
+**Unpopulated**: Shows prompt text and content buttons
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+body = slide.placeholders[1]
+
+# Placeholder is empty (unpopulated)
+# Shows prompt text in PowerPoint
+```
+
+**Populated**: Contains user content
+```python
+# Adding content populates the placeholder
+body.text = "Now it's populated"
+
+# For rich content placeholders:
+picture_ph.insert_picture('image.jpg')  # Now populated
+```
+
+### Deleting placeholders
+
+Placeholders require two deletes:
+
+1. First delete removes content (returns to unpopulated)
+2. Second delete removes the placeholder itself
+3. Deleted placeholders can be restored by reapplying the layout
+
+## Inherited dimensions
+
+Placeholders inherit position and size from their layout:
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+placeholder = slide.placeholders[1]
+
+# Read inherited dimensions
+left = placeholder.left      # From layout
+top = placeholder.top        # From layout  
+width = placeholder.width    # From layout
+height = placeholder.height  # From layout
+
+# Override with custom dimensions
+placeholder.left = Inches(2)
+placeholder.width = Inches(5)
+
+# Now uses custom left/width, inherited top/height
+```
+
+If a dimension isn't directly set, it's inherited from the layout placeholder.
+
+## Checking for placeholders
+
+Determine if a shape is a placeholder:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+
+for shape in slide.shapes:
+    if shape.is_placeholder:
+        ph_format = shape.placeholder_format
+        print(f"Placeholder idx={ph_format.idx}, type={ph_format.type}")
+    else:
+        print(f"Regular shape: {shape.name}")
+```
+
+## Placeholder format
+
+Access placeholder-specific properties:
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+placeholder = slide.placeholders[1]
+
+# Access placeholder format
+ph_format = placeholder.placeholder_format
+
+# Placeholder properties
+idx = ph_format.idx          # Index value
+ph_type = ph_format.type     # PP_PLACEHOLDER member
+```
+
+<Warning>
+Accessing `placeholder_format` on a non-placeholder shape raises `ValueError`.
+</Warning>
+
+## Working with layout placeholders
+
+Layout placeholders define the template:
+
+```python
+from pptx import Presentation
+from pptx.enum.shapes import PP_PLACEHOLDER
+
+prs = Presentation()
+layout = prs.slide_layouts[1]
+
+# Examine layout placeholders
+for placeholder in layout.placeholders:
+    ph_format = placeholder.placeholder_format
+    print(f"Layout placeholder:")
+    print(f"  idx: {ph_format.idx}")
+    print(f"  type: {ph_format.type}")
+    print(f"  name: {placeholder.name}")
+```
+
+## Complete example
+
+Create a presentation using placeholders:
+
+```python
+from pptx import Presentation
+from pptx.enum.shapes import PP_PLACEHOLDER
+from pptx.util import Pt
+
+prs = Presentation()
+
+# Title slide
+title_layout = prs.slide_layouts[0]
+slide = prs.slides.add_slide(title_layout)
+
+# Use title placeholder
+title = slide.shapes.title
+title.text = "2024 Performance Review"
+
+# Use subtitle placeholder  
+for placeholder in slide.placeholders:
+    if placeholder.placeholder_format.type == PP_PLACEHOLDER.SUBTITLE:
+        placeholder.text = "Annual Results"
+
+# Content slide with bullets
+content_layout = prs.slide_layouts[1]
+slide = prs.slides.add_slide(content_layout)
+
+# Title placeholder
+slide.shapes.title.text = "Key Achievements"
+
+# Body placeholder with multiple levels
+body = slide.placeholders[1]
+tf = body.text_frame
+tf.text = "Revenue Growth"
+
+p = tf.add_paragraph()
+p.text = "25% increase YoY"
+p.level = 1
+p.font.size = Pt(18)
+
+p = tf.add_paragraph()
+p.text = "Customer Acquisition"
+p.level = 0
+
+p = tf.add_paragraph()
+p.text = "40% new customers"
+p.level = 1
+
+# Picture slide
+pic_layout = prs.slide_layouts[8]
+slide = prs.slides.add_slide(pic_layout)
+slide.shapes.title.text = "Product Photos"
+
+# Insert picture in placeholder
+for placeholder in slide.placeholders:
+    if placeholder.placeholder_format.type == PP_PLACEHOLDER.PICTURE:
+        placeholder.insert_picture('product.jpg')
+        break
+
+prs.save('placeholder-demo.pptx')
+```
+
+## API reference
+
+### Placeholder detection
+
+**BaseShape properties:**
+- `is_placeholder` - `True` if shape is a placeholder
+- `placeholder_format` - `_PlaceholderFormat` object (raises ValueError if not placeholder)
+
+### PlaceholderFormat
+
+**Properties:**
+- `idx` - Integer placeholder index
+- `type` - `PP_PLACEHOLDER` member
+
+### Placeholder collections
+
+**Slide placeholders:**
+- `slide.placeholders` - `SlidePlaceholders` collection
+- `slide.shapes.title` - Title placeholder (if present)
+
+**Layout placeholders:**
+- `layout.placeholders` - `LayoutPlaceholders` collection
+
+**Master placeholders:**  
+- `master.placeholders` - `MasterPlaceholders` collection
+
+**Supports:** indexing by idx `[i]`, `len()`, iteration, `get(idx=...)`
+
+### Content insertion
+
+**Picture placeholders:**
+- `insert_picture(image_file)` - Insert image, returns Picture
+
+**Chart placeholders:**
+- `insert_chart(chart_type, chart_data)` - Insert chart, returns GraphicFrame
+
+**Table placeholders:**
+- `insert_table(rows, cols)` - Insert table, returns GraphicFrame

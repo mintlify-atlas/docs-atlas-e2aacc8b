@@ -1,122 +1,117 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "python-pptx",
+  "theme": "sequoia",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#D04A2A",
+    "light": "#E85D3C",
+    "dark": "#B03E23"
   },
-  "favicon": "/favicon.svg",
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/scanny/python-pptx"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/scanny/python-pptx"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Get Started",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "introduction",
+              "installation",
+              "quickstart"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Core Concepts",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "concepts/presentations",
+              "concepts/slides",
+              "concepts/shapes",
+              "concepts/placeholders"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Working with Content",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "guides/text",
+              "guides/images",
+              "guides/tables",
+              "guides/charts",
+              "guides/autoshapes"
             ]
           },
           {
-            "group": "AI tools",
+            "group": "Advanced Topics",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "advanced/slide-masters",
+              "advanced/notes",
+              "advanced/core-properties"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Core API",
             "pages": [
-              "api-reference/introduction"
+              "api/presentation",
+              "api/slides",
+              "api/shapes"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Shape Types",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api/autoshape",
+              "api/picture",
+              "api/graphicframe",
+              "api/connector",
+              "api/group"
+            ]
+          },
+          {
+            "group": "Content",
+            "pages": [
+              "api/text",
+              "api/table",
+              "api/chart",
+              "api/chart-data"
+            ]
+          },
+          {
+            "group": "Formatting",
+            "pages": [
+              "api/dml",
+              "api/color",
+              "api/fill",
+              "api/line"
+            ]
+          },
+          {
+            "group": "Additional",
+            "pages": [
+              "api/placeholders",
+              "api/action",
+              "api/image",
+              "api/util",
+              "api/exceptions",
+              "api/enums"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

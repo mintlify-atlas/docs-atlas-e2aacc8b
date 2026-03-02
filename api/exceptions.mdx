@@ -1,0 +1,167 @@
+---
+title: 'Exceptions'
+description: 'API reference for exceptions in python-pptx'
+---
+
+# Exception Classes
+
+Custom exception classes used throughout python-pptx.
+
+## PythonPptxError
+
+Base exception class for all python-pptx exceptions.
+
+### Description
+
+This is the generic base class from which all other python-pptx exceptions inherit. You can catch this exception to handle any error raised by python-pptx.
+
+### Usage
+
+```python
+from pptx.exc import PythonPptxError
+
+try:
+    prs = Presentation('presentation.pptx')
+    # ... do work with presentation
+except PythonPptxError as e:
+    print(f"An error occurred: {e}")
+```
+
+## PackageNotFoundError
+
+Raised when a presentation package cannot be found at the specified path.
+
+### Description
+
+This exception is raised when attempting to open a presentation file that doesn't exist or cannot be accessed.
+
+### Inheritance
+
+```
+PythonPptxError
+  └── PackageNotFoundError
+```
+
+### Usage
+
+```python
+from pptx import Presentation
+from pptx.exc import PackageNotFoundError
+
+try:
+    prs = Presentation('nonexistent.pptx')
+except PackageNotFoundError:
+    print("Presentation file not found")
+    prs = Presentation()  # Create a new presentation instead
+```
+
+### When Raised
+
+- Opening a presentation from a non-existent file path
+- Opening a presentation from an invalid file path
+- File access permission errors
+
+## InvalidXmlError
+
+Raised when a value in the XML is not valid according to the Office Open XML schema.
+
+### Description
+
+This exception indicates that the presentation file contains XML that violates the OOXML schema specification. This can occur with corrupted files or files created by non-compliant software.
+
+### Inheritance
+
+```
+PythonPptxError
+  └── InvalidXmlError
+```
+
+### Usage
+
+```python
+from pptx import Presentation
+from pptx.exc import InvalidXmlError
+
+try:
+    prs = Presentation('corrupted.pptx')
+    slide = prs.slides[0]
+    # ... process slide
+except InvalidXmlError as e:
+    print(f"Invalid XML in presentation: {e}")
+    # Handle corrupted file
+```
+
+### When Raised
+
+- Opening a corrupted presentation file
+- Reading XML elements with invalid attribute values
+- Processing presentations with schema violations
+- Working with files created by non-compliant tools
+
+## Exception Hierarchy
+
+```
+Exception
+  └── PythonPptxError (base class)
+       ├── PackageNotFoundError
+       └── InvalidXmlError
+```
+
+## Best Practices
+
+### Catch Specific Exceptions
+
+```python
+from pptx import Presentation
+from pptx.exc import PackageNotFoundError, InvalidXmlError
+
+try:
+    prs = Presentation('presentation.pptx')
+    # ... work with presentation
+except PackageNotFoundError:
+    print("File not found, creating new presentation")
+    prs = Presentation()
+except InvalidXmlError:
+    print("Corrupted file, cannot process")
+    raise
+except Exception as e:
+    print(f"Unexpected error: {e}")
+    raise
+```
+
+### Use Base Class for General Handling
+
+```python
+from pptx.exc import PythonPptxError
+
+def safe_open_presentation(path):
+    try:
+        return Presentation(path)
+    except PythonPptxError as e:
+        # Handle all python-pptx errors uniformly
+        logging.error(f"Failed to open presentation: {e}")
+        return None
+```
+
+### Re-raise When Appropriate
+
+```python
+try:
+    prs = Presentation('important.pptx')
+except InvalidXmlError as e:
+    # Log the error but let it propagate
+    logging.error(f"Cannot process corrupted file: {e}")
+    raise  # Re-raise to stop execution
+```
+
+## Error Messages
+
+All python-pptx exceptions include descriptive error messages that help identify the issue:
+
+```python
+try:
+    prs = Presentation('bad.pptx')
+except PythonPptxError as e:
+    # Error message provides details
+    print(str(e))  # e.g., "Package not found at 'bad.pptx'"
+```

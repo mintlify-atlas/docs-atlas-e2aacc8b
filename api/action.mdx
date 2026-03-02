@@ -1,0 +1,135 @@
+---
+title: 'Action Settings'
+description: 'API reference for mouse click and hover actions in python-pptx'
+---
+
+# Action Objects
+
+Objects related to mouse click and hover actions on shapes or text runs.
+
+## ActionSetting
+
+Properties specifying how a shape or text run reacts to mouse actions during a slide show.
+
+### Properties
+
+<ParamField path="action" type="PP_ACTION_TYPE">
+  Member of the PP_ACTION enumeration indicating the type of action.
+  
+  Returns the type of action that will result when the shape or text is clicked or the mouse pointer is positioned over it during a slide show. Returns `PP_ACTION.NONE` if there is no action or if the action is not recognized.
+  
+  **Possible values:**
+  - `PP_ACTION.HYPERLINK` - Navigate to a URL
+  - `PP_ACTION.FIRST_SLIDE` - Go to first slide
+  - `PP_ACTION.LAST_SLIDE` - Go to last slide
+  - `PP_ACTION.NEXT_SLIDE` - Go to next slide
+  - `PP_ACTION.PREVIOUS_SLIDE` - Go to previous slide
+  - `PP_ACTION.LAST_SLIDE_VIEWED` - Go to last viewed slide
+  - `PP_ACTION.NAMED_SLIDE` - Go to a specific slide
+  - `PP_ACTION.END_SHOW` - End the slide show
+  - `PP_ACTION.NAMED_SLIDE_SHOW` - Run a named slide show
+  - `PP_ACTION.PLAY` - Start another presentation
+  - `PP_ACTION.OPEN_FILE` - Open a file
+  - `PP_ACTION.RUN_MACRO` - Run a macro
+  - `PP_ACTION.RUN_PROGRAM` - Run a program
+  - `PP_ACTION.OLE_VERB` - OLE verb action
+  - `PP_ACTION.NONE` - No action
+</ParamField>
+
+<ParamField path="hyperlink" type="Hyperlink">
+  A Hyperlink object representing the hyperlink action.
+  
+  A Hyperlink object is always returned, even if no hyperlink or other click action is defined.
+</ParamField>
+
+<ParamField path="target_slide" type="Slide | None">
+  Reference to the slide that is the target of a slide jump action.
+  
+  Returns the target slide for slide jump actions including `PP_ACTION.FIRST_SLIDE`, `LAST_SLIDE`, `NEXT_SLIDE`, `PREVIOUS_SLIDE`, and `NAMED_SLIDE`. Returns `None` for all other actions.
+  
+  **Writable:** Assign a Slide object to create an internal hyperlink to that slide. Assign `None` to remove any slide jump action.
+  
+  **Example:**
+  ```python
+  slide, target_slide = prs.slides[0], prs.slides[1]
+  shape = slide.shapes[0]
+  shape.click_action.target_slide = target_slide
+  ```
+  
+  <Note>
+    The `LAST_SLIDE_VIEWED` and `PLAY` actions are not supported for this property.
+  </Note>
+</ParamField>
+
+### Example Usage
+
+```python
+from pptx.enum.action import PP_ACTION
+
+# Check the action type
+if shape.click_action.action == PP_ACTION.HYPERLINK:
+    print(f"Hyperlink: {shape.click_action.hyperlink.address}")
+
+# Set a slide jump action
+shape.click_action.target_slide = prs.slides[2]
+
+# Access the action type
+assert shape.click_action.action == PP_ACTION.NAMED_SLIDE
+```
+
+## Hyperlink
+
+Represents a hyperlink action on a shape or text run.
+
+### Properties
+
+<ParamField path="address" type="str | None">
+  Read/write URL of the hyperlink.
+  
+  The URL can use http, https, mailto, or file schemes. Returns `None` if no hyperlink is defined or if another action (like `RUN_MACRO`) is defined instead.
+  
+  **Writing:** Assign a URL string to add or change the hyperlink. Assign `None` to remove any action (hyperlink or otherwise).
+  
+  **Example:**
+  ```python
+  # Add a hyperlink
+  shape.click_action.hyperlink.address = 'https://github.com/scanny/python-pptx'
+  
+  # Check hyperlink URL
+  url = shape.click_action.hyperlink.address
+  if url:
+      print(f"Links to: {url}")
+  
+  # Remove hyperlink
+  shape.click_action.hyperlink.address = None
+  ```
+</ParamField>
+
+### Example Usage
+
+```python
+# Set hyperlink on a shape
+shape.click_action.hyperlink.address = 'https://python-pptx.readthedocs.io'
+
+# Set hyperlink on a text run
+run = shape.text_frame.paragraphs[0].runs[0]
+run.hyperlink.address = 'mailto:info@example.com'
+
+# Check if shape has a hyperlink
+if shape.click_action.hyperlink.address:
+    print("Shape has a hyperlink")
+```
+
+## PP_ACTION Enumeration
+
+Specifies the type of mouse action. See [Enumerations](/api/enums#pp_action_type) for full details.
+
+### Common Values
+
+- `PP_ACTION.NONE` (0) - No action
+- `PP_ACTION.NEXT_SLIDE` (1) - Move to next slide
+- `PP_ACTION.PREVIOUS_SLIDE` (2) - Move to previous slide  
+- `PP_ACTION.FIRST_SLIDE` (3) - Go to first slide
+- `PP_ACTION.LAST_SLIDE` (4) - Go to last slide
+- `PP_ACTION.HYPERLINK` (7) - Navigate to URL
+- `PP_ACTION.END_SHOW` (6) - End the presentation

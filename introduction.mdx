@@ -1,0 +1,157 @@
+---
+title: Introduction to python-pptx
+description: A Python library for creating, reading, and updating PowerPoint (.pptx) files
+---
+
+# Introduction to python-pptx
+
+python-pptx is a Python library for creating, reading, and updating PowerPoint (.pptx) files. It enables you to generate presentations programmatically without needing PowerPoint installed, making it perfect for automation, report generation, and dynamic content creation.
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Get started by installing python-pptx via pip, poetry, or conda
+  </Card>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Create your first presentation in minutes with our step-by-step guide
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/presentation">
+    Explore the complete API documentation and available methods
+  </Card>
+  <Card title="Core Concepts" icon="book-open" href="/concepts/presentations">
+    Learn about presentations, slides, shapes, and placeholders
+  </Card>
+</CardGroup>
+
+## What can you do with python-pptx?
+
+python-pptx runs on any Python-capable platform, including macOS and Linux, and does not require the PowerPoint application to be installed or licensed. It works with the modern .pptx file format (Office 2007 and later).
+
+### Key features
+
+<CardGroup cols={2}>
+  <Card title="Create presentations" icon="file-powerpoint">
+    Build presentations from scratch with custom layouts, themes, and content
+  </Card>
+  <Card title="Add rich content" icon="shapes">
+    Insert text boxes, images, shapes, tables, and charts programmatically
+  </Card>
+  <Card title="Read and analyze" icon="magnifying-glass">
+    Extract text and images from existing presentations for analysis
+  </Card>
+  <Card title="Modify existing files" icon="pen-to-square">
+    Update and customize existing PowerPoint presentations
+  </Card>
+  <Card title="Style and format" icon="palette">
+    Control fonts, colors, alignment, and formatting at a granular level
+  </Card>
+  <Card title="Automate workflows" icon="gears">
+    Generate reports and presentations automatically from data sources
+  </Card>
+</CardGroup>
+
+## Real-world use cases
+
+### Generate dynamic reports
+
+Create presentation-ready reports from database queries, analytics output, or API responses. Perfect for automated reporting systems where presentations need to be generated on-demand.
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+
+# Generate a report from database data
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+slide.shapes.title.text = "Q4 Sales Report"
+
+# Add dynamic content
+body = slide.placeholders[1]
+tf = body.text_frame
+tf.text = f"Total Revenue: ${total_revenue:,.2f}"
+
+prs.save('q4_report.pptx')
+```
+
+### Automate bulk updates
+
+Make bulk updates to a library of presentations, such as updating company branding, replacing images, or standardizing formatting across multiple files.
+
+```python
+from pptx import Presentation
+import os
+
+# Update all presentations in a directory
+for filename in os.listdir('presentations'):
+    if filename.endswith('.pptx'):
+        prs = Presentation(f'presentations/{filename}')
+        # Update core properties
+        prs.core_properties.author = "Your Company"
+        prs.save(f'updated/{filename}')
+```
+
+### Extract and analyze content
+
+Analyze PowerPoint files from a corpus to extract search indexing text, gather analytics, or build content inventories.
+
+```python
+from pptx import Presentation
+
+prs = Presentation('presentation.pptx')
+text_content = []
+
+for slide in prs.slides:
+    for shape in slide.shapes:
+        if shape.has_text_frame:
+            for paragraph in shape.text_frame.paragraphs:
+                for run in paragraph.runs:
+                    text_content.append(run.text)
+```
+
+### Web application integration
+
+Generate customized presentations in response to HTTP requests, allowing users to download dynamically created .pptx files from your web application.
+
+<Note>
+python-pptx works seamlessly with web frameworks like Flask, Django, FastAPI, and others. Simply generate the presentation in memory and return it as a downloadable response.
+</Note>
+
+## Why python-pptx?
+
+<CardGroup cols={1}>
+  <Card title="Cross-platform compatibility">
+    Works on Windows, macOS, Linux, and any platform that supports Python 3.8+
+  </Card>
+  <Card title="No PowerPoint required">
+    Generate presentations without needing Microsoft Office installed or licensed
+  </Card>
+  <Card title="Production-ready">
+    Mature, stable library with extensive real-world usage and active maintenance
+  </Card>
+  <Card title="Pythonic API">
+    Clean, intuitive API design that feels natural to Python developers
+  </Card>
+</CardGroup>
+
+## Platform support
+
+- **Python versions**: 3.8, 3.9, 3.10, 3.11, 3.12
+- **Operating systems**: Windows, macOS, Linux, and any OS with Python support
+- **PowerPoint format**: .pptx files (Office 2007 and later)
+
+## License
+
+python-pptx is released under the MIT License, making it free for both personal and commercial use.
+
+## Next steps
+
+<Steps>
+  <Step title="Install python-pptx">
+    Follow our [installation guide](/installation) to get python-pptx set up in your environment
+  </Step>
+  <Step title="Complete the quickstart">
+    Work through the [quickstart tutorial](/quickstart) to create your first presentation
+  </Step>
+  <Step title="Explore the API">
+    Dive into the [API reference](/api/presentation) to discover all available features
+  </Step>
+</Steps>

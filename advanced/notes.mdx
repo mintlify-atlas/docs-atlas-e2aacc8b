@@ -1,0 +1,372 @@
+---
+title: "Notes slides"
+description: "Add and access speaker notes in PowerPoint presentations"
+---
+
+## Overview
+
+Notes slides contain speaker notes that accompany each slide in a presentation. They're displayed in presenter view and can be printed as handouts.
+
+### Key concepts
+
+- **Notes slide**: Contains notes content for a specific slide
+- **Notes master**: Template that defines the layout and formatting for all notes slides
+- **Notes placeholder**: The text area where notes content is stored
+
+## Adding notes to a slide
+
+The simplest way to add notes is through the notes text frame.
+
+### Add basic notes text
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[0])
+
+# Add notes to the slide
+notes_slide = slide.notes_slide
+text_frame = notes_slide.notes_text_frame
+text_frame.text = "This is my speaker note for this slide."
+
+prs.save('presentation_with_notes.pptx')
+```
+
+### Add formatted notes
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+
+# Access the notes text frame
+notes_slide = slide.notes_slide
+text_frame = notes_slide.notes_text_frame
+
+# Clear existing content
+text_frame.clear()
+
+# Add formatted paragraphs
+p = text_frame.paragraphs[0]
+p.text = "Key points to remember:"
+p.level = 0
+
+p = text_frame.add_paragraph()
+p.text = "First main point"
+p.level = 1
+
+p = text_frame.add_paragraph()
+p.text = "Second main point"
+p.level = 1
+
+prs.save('formatted_notes.pptx')
+```
+
+## Accessing notes slides
+
+### Check if a slide has notes
+
+```python
+from pptx import Presentation
+
+prs = Presentation('presentation.pptx')
+slide = prs.slides[0]
+
+# Check without creating notes slide
+if slide.has_notes_slide:
+    print("Slide has notes")
+    notes_slide = slide.notes_slide
+    text_frame = notes_slide.notes_text_frame
+    print(f"Notes: {text_frame.text}")
+else:
+    print("Slide has no notes")
+```
+
+<Note>
+Use `.has_notes_slide` to check for notes without creating a notes slide. Accessing `.notes_slide` directly will create a notes slide if one doesn't exist.
+</Note>
+
+### Read notes from existing slides
+
+```python
+from pptx import Presentation
+
+prs = Presentation('presentation.pptx')
+
+# Extract all notes from the presentation
+for slide_num, slide in enumerate(prs.slides, start=1):
+    if slide.has_notes_slide:
+        notes_slide = slide.notes_slide
+        text_frame = notes_slide.notes_text_frame
+        print(f"Slide {slide_num} notes:")
+        print(text_frame.text)
+        print("-" * 40)
+```
+
+## Working with the notes placeholder
+
+The notes placeholder is the primary text area on a notes slide.
+
+### Access the notes placeholder directly
+
+```python
+from pptx import Presentation
+from pptx.enum.shapes import PP_PLACEHOLDER
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[0])
+notes_slide = slide.notes_slide
+
+# Get the notes placeholder
+notes_placeholder = notes_slide.notes_placeholder
+
+if notes_placeholder:
+    text_frame = notes_placeholder.text_frame
+    text_frame.text = "Notes content"
+else:
+    print("No notes placeholder found")
+```
+
+<Warning>
+The notes placeholder may be `None` if the notes master doesn't have a body placeholder or if it has been deleted from the notes slide.
+</Warning>
+
+### Access all placeholders on notes slide
+
+```python
+from pptx import Presentation
+from pptx.enum.shapes import PP_PLACEHOLDER
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[0])
+notes_slide = slide.notes_slide
+
+# Iterate through all placeholders
+for placeholder in notes_slide.placeholders:
+    ph_type = placeholder.placeholder_format.type
+    
+    if ph_type == PP_PLACEHOLDER.BODY:
+        print("Found notes text placeholder")
+    elif ph_type == PP_PLACEHOLDER.SLIDE_IMAGE:
+        print("Found slide image placeholder")
+    elif ph_type == PP_PLACEHOLDER.SLIDE_NUMBER:
+        print("Found slide number placeholder")
+```
+
+## Working with the notes master
+
+The notes master defines the template for all notes slides in a presentation.
+
+### Access the notes master
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+
+# Access the notes master
+notes_master = prs.notes_master
+
+print(f"Notes master name: {notes_master.name}")
+```
+
+<Note>
+If a presentation doesn't have a notes master, accessing `.notes_master` creates one from a default template.
+</Note>
+
+### Customize the notes master
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+notes_master = prs.notes_master
+
+# Access shapes on the notes master
+for shape in notes_master.shapes:
+    print(f"Shape: {shape.name}")
+
+# Access placeholders
+for placeholder in notes_master.placeholders:
+    ph_format = placeholder.placeholder_format
+    print(f"Placeholder type={ph_format.type}, idx={ph_format.idx}")
+```
+
+## Working with notes slide shapes
+
+Notes slides can contain shapes in addition to the notes text.
+
+### Access all shapes on a notes slide
+
+```python
+from pptx import Presentation
+
+prs = Presentation('presentation.pptx')
+slide = prs.slides[0]
+
+if slide.has_notes_slide:
+    notes_slide = slide.notes_slide
+    
+    # Iterate through all shapes
+    for shape in notes_slide.shapes:
+        print(f"Shape: {shape.name}")
+        
+        # Check if it's a placeholder
+        if shape.is_placeholder:
+            ph_type = shape.placeholder_format.type
+            print(f"  Placeholder type: {ph_type}")
+```
+
+### Add shapes to notes slides
+
+```python
+from pptx import Presentation
+from pptx.util import Inches
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[0])
+notes_slide = slide.notes_slide
+
+# Add a text box to the notes slide
+left = Inches(1)
+top = Inches(5)
+width = Inches(4)
+height = Inches(1)
+
+textbox = notes_slide.shapes.add_textbox(left, top, width, height)
+text_frame = textbox.text_frame
+text_frame.text = "Additional note information"
+
+prs.save('notes_with_textbox.pptx')
+```
+
+## Practical examples
+
+### Bulk add notes from a list
+
+```python
+from pptx import Presentation
+
+prs = Presentation('template.pptx')
+
+# Speaker notes for each slide
+notes_list = [
+    "Welcome the audience and introduce the topic",
+    "Explain the main problem we're solving",
+    "Walk through the solution architecture",
+    "Discuss implementation timeline",
+    "Thank the audience and open for Q&A"
+]
+
+# Add notes to each slide
+for slide, note_text in zip(prs.slides, notes_list):
+    notes_slide = slide.notes_slide
+    text_frame = notes_slide.notes_text_frame
+    text_frame.text = note_text
+
+prs.save('presentation_with_notes.pptx')
+```
+
+### Export notes to text file
+
+```python
+from pptx import Presentation
+
+prs = Presentation('presentation.pptx')
+
+# Export all notes to a text file
+with open('speaker_notes.txt', 'w', encoding='utf-8') as f:
+    for slide_num, slide in enumerate(prs.slides, start=1):
+        f.write(f"Slide {slide_num}\n")
+        f.write("=" * 50 + "\n")
+        
+        if slide.has_notes_slide:
+            notes_slide = slide.notes_slide
+            text_frame = notes_slide.notes_text_frame
+            f.write(text_frame.text + "\n")
+        else:
+            f.write("(No notes)\n")
+        
+        f.write("\n")
+
+print("Notes exported to speaker_notes.txt")
+```
+
+### Copy notes from one presentation to another
+
+```python
+from pptx import Presentation
+
+# Open source and destination presentations
+source = Presentation('source.pptx')
+dest = Presentation('destination.pptx')
+
+# Copy notes from source to destination
+for src_slide, dest_slide in zip(source.slides, dest.slides):
+    if src_slide.has_notes_slide:
+        src_notes = src_slide.notes_slide.notes_text_frame.text
+        
+        dest_notes_slide = dest_slide.notes_slide
+        dest_text_frame = dest_notes_slide.notes_text_frame
+        dest_text_frame.text = src_notes
+
+dest.save('destination_with_notes.pptx')
+```
+
+## Understanding notes slide creation
+
+Notes slides are created lazily when accessed.
+
+```python
+from pptx import Presentation
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[0])
+
+# No notes slide exists yet
+print(f"Has notes: {slide.has_notes_slide}")  # False
+
+# Accessing notes_slide creates it
+notes_slide = slide.notes_slide
+
+# Now it exists
+print(f"Has notes: {slide.has_notes_slide}")  # True
+```
+
+<Note>
+A notes slide is created automatically when you access `.notes_slide`. The notes slide clones placeholders from the notes master.
+</Note>
+
+## Best practices
+
+<AccordionGroup>
+  <Accordion title="Check before accessing notes">
+    Use `.has_notes_slide` before accessing `.notes_slide` if you want to avoid creating empty notes slides.
+  </Accordion>
+  
+  <Accordion title="Handle missing notes placeholder">
+    Always check if `.notes_placeholder` returns `None` before accessing its text frame, especially when working with custom templates.
+  </Accordion>
+  
+  <Accordion title="Use notes_text_frame shortcut">
+    For simple text operations, use `.notes_text_frame` instead of accessing the placeholder directly. It returns `None` if there's no notes placeholder.
+  </Accordion>
+  
+  <Accordion title="Preserve formatting when copying">
+    When copying notes between presentations, consider copying at the paragraph level if you need to preserve formatting.
+  </Accordion>
+</AccordionGroup>
+
+## Related resources
+
+<CardGroup cols={2}>
+  <Card title="Working with text" icon="text" href="/guides/text">
+    Learn about text formatting and paragraphs
+  </Card>
+  
+  <Card title="Slide masters" icon="layer-group" href="/advanced/slide-masters">
+    Understand masters and template structure
+  </Card>
+</CardGroup>
